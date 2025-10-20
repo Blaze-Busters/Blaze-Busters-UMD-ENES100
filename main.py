@@ -1,4 +1,5 @@
 from enes100 import enes100
+import zone_template as zt
 import time
 
 enes100.begin("Blaze Busters","FIRE",222,1120)

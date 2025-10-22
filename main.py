@@ -14,7 +14,11 @@ ECHO4 = Pin(35, Pin.IN)
 TRIG5 = Pin(5, Pin.OUT)
 ECHO5 = Pin(36, Pin.IN)
 
-
+#FLAME SENSOR PINS
+FS1 = Pin(17, Pin.IN)
+FS2 = Pin(25, Pin.IN)
+FS3 = Pin(26, Pin.IN)
+FS4 = Pin(39, Pin.IN)
 
 
 flame = Pin(34, Pin.IN)

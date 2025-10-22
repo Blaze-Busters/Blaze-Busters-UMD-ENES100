@@ -14,7 +14,8 @@ while True:
                 #spin in place to face candle
             #move forward
         else:
-            if(!((theta<-1.541)&&(theta>-1.599))):
+            while(!((theta<-1.541)&&(theta>-1.599))):
                 #spin in place to face candle
             #move foward
+
 

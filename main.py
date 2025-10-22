@@ -21,7 +21,7 @@ FS3 = Pin(26, Pin.IN)
 FS4 = Pin(39, Pin.IN)
 
 
-flame = Pin(34, Pin.IN)
+
 
 def distance_cm(trig, echo):
     trig.value(0)
@@ -34,8 +34,11 @@ def distance_cm(trig, echo):
     return dist_cm
 
 
-def flame_detected():
-    return flame.value() == 0
+def flame_detected(flame_pin):
+    if flame_pin.value() == 0:
+        return "Fire!"
+    else:
+        return "No Fire"
 
 # enes100.begin("Blaze Busters","FIRE",222,1120)
 
@@ -46,18 +49,21 @@ def flame_detected():
 #     print("-----------------------------")
 #     time.sleep(2)
 
+
 while True:
     print("""
 ULTRASONIC SENSORS
-US1: {} cm
-US2: {} cm
-US3: {} cm  
-US4: {} cm
-US5: {} cm
+US1: {} cm, US2: {} cm, US3: {} cm, US4: {} cm, US5: {} cm
+FLAME SENSORS
+FS1: {}, FS2: {}, FS3: {}, FS4: {}
 """.format(distance_cm(TRIG1, ECHO1),
            distance_cm(TRIG2, ECHO2),
            distance_cm(TRIG3, ECHO3),
            distance_cm(TRIG4, ECHO4),
-           distance_cm(TRIG5, ECHO5))
+           distance_cm(TRIG5, ECHO5),
+           flame_detected(FS1),
+           flame_detected(FS2),
+           flame_detected(FS3),
+           flame_detected(FS4))
     )
     time.sleep(.5)

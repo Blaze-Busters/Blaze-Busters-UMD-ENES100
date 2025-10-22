@@ -13,9 +13,10 @@ while True:
             while(!((theta>1.541)&&(theta<1.599))): #if not in wanted range
                 #spin in place to face candle
             #move forward
-        else:
+        else: #if at top start
             while(!((theta<-1.541)&&(theta>-1.599))):
                 #spin in place to face candle
             #move foward
+
 
 

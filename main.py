@@ -1,4 +1,4 @@
-from machine import Pin, time_pulse_us
+from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 import time
 
@@ -21,7 +21,17 @@ FS3 = Pin(26, Pin.IN)
 FS4 = Pin(39, Pin.IN)
 
 
+#SERVO SETUP
+servo = PWM(Pin(16), freq=50)
+pot = ADC(Pin(4))
+pot.atten(ADC.ATTN_11DB)
+pot.width(ADC.WIDTH_10BIT) 
 
+def set_speed(speed):
+    stop_duty = 77 
+    duty_range = 25 
+    duty = int(stop_duty + (speed / 100) * duty_range)
+    servo.duty(duty)
 
 def distance_cm(trig, echo):
     trig.value(0)
@@ -51,11 +61,13 @@ def flame_detected(flame_pin):
 
 
 while True:
+    set_speed(pot.read() * 100 / 1023)
     print("""
 ULTRASONIC SENSORS
 US1: {} cm, US2: {} cm, US3: {} cm, US4: {} cm, US5: {} cm
 FLAME SENSORS
 FS1: {}, FS2: {}, FS3: {}, FS4: {}
+POTENTIOMETER VALUE: {}
 """.format(distance_cm(TRIG1, ECHO1),
            distance_cm(TRIG2, ECHO2),
            distance_cm(TRIG3, ECHO3),
@@ -64,6 +76,7 @@ FS1: {}, FS2: {}, FS3: {}, FS4: {}
            flame_detected(FS1),
            flame_detected(FS2),
            flame_detected(FS3),
-           flame_detected(FS4))
+           flame_detected(FS4),
+           pot.read())
     )
     time.sleep(.5)

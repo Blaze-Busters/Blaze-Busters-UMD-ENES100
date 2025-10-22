@@ -27,6 +27,14 @@ pot = ADC(Pin(4))
 pot.atten(ADC.ATTN_11DB)
 pot.width(ADC.WIDTH_10BIT) 
 
+#MOTOR DRIVER SETUP
+ENA = Pin(22, Pin.OUT)
+IN1 = Pin(18, Pin.OUT)
+IN2 = Pin(19, Pin.OUT)
+ENB = Pin(23, Pin.OUT)
+IN3 = Pin(21, Pin.OUT)
+IN4 = Pin(4, Pin.OUT)
+
 def set_speed(speed):
     stop_duty = 77 
     duty_range = 25 

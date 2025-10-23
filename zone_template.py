@@ -9,13 +9,16 @@ while True:
     theta = enes100.theta()
 
     if(button_start):
-        if(enes100.y<1.3): #if at bottom position
-            while(!((theta>1.541)&&(theta<1.599))): #if not in wanted range
-                #spin in place to face candle
-            #move forward
-        else:
-            while(!((theta<-1.541)&&(theta>-1.599))):
-                #spin in place to face candle
-            #move foward
+        while(x < 0.8): #while in zone 1
+            if(enes100.y<1.3): #if at bottom position
+                while(!((theta>1.541)&&(theta<1.599))): #if not in wanted range
+                    #spin in place to face candle
+                #move forward
+            else: #if at top start
+                while(!((theta<-1.541)&&(theta>-1.599))):
+                    #spin in place to face candle
+                #move forward
+
+
 
 

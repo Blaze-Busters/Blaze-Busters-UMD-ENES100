@@ -10,3 +10,6 @@ def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
     total_flames = 1 + fire_count
 
     return total_flames
+
+# Call function example
+    numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4)

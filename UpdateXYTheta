@@ -1,0 +1,19 @@
+import threading
+import time
+
+# Globals to hold the latest position values
+x = 0
+y = 0
+theta = 0
+
+def update_position():
+    global x, y, theta
+    while True:
+        time.sleep(1)  # update every second
+        x = enes100.x()
+        y = enes100.y()
+        theta = enes100.theta()
+
+# Start background thread
+thread = threading.Thread(target=update_position, daemon=True)
+thread.start()

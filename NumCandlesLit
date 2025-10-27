@@ -1,12 +1,12 @@
-def number_of_flames_lit(statement1, statement2, statement3, statement4):
+def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
 
-    # make a list of the statements
-    statements = [statement1, statement2, statement3, statement4]
+    # list of all sensors
+    sensors = [left_flame, right_flame, front_flame, back_flame]
 
-    # count how many times "Fire!" appears
-    fire_count = statements.count("Fire!")
+    # count how many sensors detect fire (value == 0)
+    fire_count = sum(1 for sensor in sensors if sensor.value() == 0)
 
-    # add the count to the initial flame
+    # total flames lit
     total_flames = 1 + fire_count
 
     return total_flames

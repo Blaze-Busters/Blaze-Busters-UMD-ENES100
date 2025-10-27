@@ -1,1 +1,10 @@
+def number_of_flames_lit(statement1, statement2, statement3, statement4):
+    # initial number of flames lit
+    
+    # add up all the True statements
+    true_count = sum([statement1, statement2, statement3, statement4])
+    
+    # total flames lit
+    total_flames = 1 + true_count
 
+    retun total_flames

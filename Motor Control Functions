@@ -1,0 +1,50 @@
+#MOTOR PINS
+ENA = Pin(22, Pin.OUT)
+IN1 = Pin(18, Pin.OUT)
+IN2 = Pin(19, Pin.OUT)
+ENB = Pin(23, Pin.OUT)
+IN3 = Pin(21, Pin.OUT)
+IN4 = Pin(4, Pin.OUT)
+
+#Each motor 
+def motor_left_forward():
+    ENA.value(1)
+    IN1.value(1)
+    IN2.value(0)
+    
+def motor_left_backward():
+    ENA.value(1)
+    IN1.value(0)
+    IN2.value(1)
+
+def motor_right_forward():
+    ENB.value(1)
+    IN3.value(1)
+    IN4.value(0)
+
+def motor_right_backward():
+    ENB.value(1)
+    IN3.value(0)
+    IN4.value(1)
+
+def motor_stop():
+    ENA.value(0)
+    ENB.value(0)
+
+
+#turning functions
+def turn_right_90():
+    motor_left_forward()   # right wheel reverse
+    motor_right_backward()   # left wheel forward
+    
+    time.sleep(0.7)  # change by testing irl
+    
+    motor_stop()
+
+def turn_left_90():
+    motor_left_backward()   # left wheel reverse
+    motor_right_forward()   # right wheel forward
+    
+    time.sleep(0.7)  # change by testing irl
+    
+    motor_stop()

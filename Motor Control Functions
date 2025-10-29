@@ -1,34 +1,46 @@
 #MOTOR PINS
 
 #left motor
-ENA = Pin(22, Pin.OUT) # connect to PWM pin
+ENA = PMW(Pin(22, Pin.OUT)) # connect to PWM pin
 IN1 = Pin(18, Pin.OUT)
 IN2 = Pin(19, Pin.OUT)
 #right motor
-ENB = Pin(23, Pin.OUT) # connect to PWM pin
+ENB = PMW(Pin(23, Pin.OUT)) # connect to PWM pin
 IN3 = Pin(21, Pin.OUT)
 IN4 = Pin(4, Pin.OUT)
 
+#frequency
+ENA.freq(1000)
+
+def set_motor_speed_left(speed):
+    duty = int(speed * 65535)
+    ENA.duty_u16(duty)
+
+def set_motor_speed_right(speed):
+    duty = int(speed * 65535)
+    ENB.duty_u16(duty)
+
 #Each motor 
-def motor_left_forward():
-    ENA.value(1)
+def motor_left_forward(speed):
     IN1.value(1)
     IN2.value(0)
+    set_motor_speed_left(speed)
+
     
-def motor_left_backward():
-    ENA.value(1)
+def motor_left_backward(speed):
     IN1.value(0)
     IN2.value(1)
+    set_motor_speed_left(speed)
 
-def motor_right_forward():
-    ENB.value(1)
+def motor_right_forward(speed):
     IN3.value(1)
     IN4.value(0)
+    set_motor_speed_right(speed)
 
-def motor_right_backward():
-    ENB.value(1)
+def motor_right_backward(speed):
     IN3.value(0)
     IN4.value(1)
+    set_motor_speed_right(speed)
 
 def motor_stop():
     ENA.value(0)
@@ -37,16 +49,16 @@ def motor_stop():
 
 #turning functions
 def turn_right_90():
-    motor_left_forward()   # right wheel reverse
-    motor_right_backward()   # left wheel forward
+    motor_left_forward(0.5)   # right wheel reverse 50% speed
+    motor_right_backward(0.5)   # left wheel forward 50% speed
     
     time.sleep(0.7)  # change by testing irl
     
     motor_stop()
 
 def turn_left_90():
-    motor_left_backward()   # left wheel reverse
-    motor_right_forward()   # right wheel forward
+    motor_left_backward(0.5)   # left wheel reverse 50% speed
+    motor_right_forward(0.5)   # right wheel forward 50% speed
     
     time.sleep(0.7)  # change by testing irl
     

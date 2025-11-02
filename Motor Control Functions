@@ -1,65 +1,96 @@
-#MOTOR PINS
+from machine import Pin, PWM
+import time
 
-#left motor
-ENA = PWM(Pin(22, Pin.OUT)) # connect to PWM pin
+# -----Pin map-----
+# Left motor
 IN1 = Pin(18, Pin.OUT)
 IN2 = Pin(19, Pin.OUT)
-#right motor
-ENB = PWM(Pin(23, Pin.OUT)) # connect to PWM pin
+ENA = PWM(Pin(22))        
+
+# Right motor
 IN3 = Pin(21, Pin.OUT)
-IN4 = Pin(4, Pin.OUT)
+IN4 = Pin(4,  Pin.OUT)
+ENB = PWM(Pin(23))
 
-#frequency
-ENA.freq(1000)
+# PWM frequency
+for en in (ENA, ENB):
+    en.freq(1000)
 
-def set_motor_speed_left(speed):
-    duty = int(speed * 65535)
-    ENA.duty_u16(duty)
+# Make sure everything starts safe
+for p in (IN1, IN2, IN3, IN4):
+    p.value(0)
 
-def set_motor_speed_right(speed):
-    duty = int(speed * 65535)
-    ENB.duty_u16(duty)
+# ----- PWM helper -----
+def _set_pwm(pwm, frac):  # frac: 0.0..1.0
+    if frac < 0:  frac = 0.0
+    if frac > 1:  frac = 1.0
+    try:
+        pwm.duty_u16(int(frac * 65535))
+    except AttributeError:
+        pwm.duty(int(frac * 1023))
 
-#Each motor 
-def motor_left_forward(speed):
-    IN1.value(1)
-    IN2.value(0)
-    set_motor_speed_left(speed)
+# ----- Generic DC motor wrapper with the same API as your servo.spin -----GPT
+class DCMotor:
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM, brake_stop=False, invert=False):
+        self.in_a = in_a
+        self.in_b = in_b
+        self.en    = en_pwm
+        self.brake = brake_stop   # False = coast stop; True = active brake
+        self.inv   = invert       # flip direction if your wiring is reversed
+        self.stop()               # start stopped
 
-    
-def motor_left_backward(speed):
-    IN1.value(0)
-    IN2.value(1)
-    set_motor_speed_left(speed)
+    def _dir(self, forward=True):
+        fwd = forward ^ self.inv
+        if fwd:
+            self.in_a.value(1); self.in_b.value(0)
+        else:
+            self.in_a.value(0); self.in_b.value(1)
 
-def motor_right_forward(speed):
-    IN3.value(1)
-    IN4.value(0)
-    set_motor_speed_right(speed)
+    def set(self, speed):
+        # clamp and split into direction + magnitude
+        if speed is None:
+            speed = 0
+        if speed > 100:  speed = 100
+        if speed < -100: speed = -100
 
-def motor_right_backward(speed):
-    IN3.value(0)
-    IN4.value(1)
-    set_motor_speed_right(speed)
+        if speed == 0:
+            self.stop()
+            return
 
-def motor_stop():
-    ENA.value(0)
-    ENB.value(0)
+        self._dir(forward=(speed > 0))
+        mag = abs(speed) / 100.0
+        _set_pwm(self.en, mag)
 
+    def spin(self, duration, speed):
+        self.set(speed)
+        time.sleep(duration)
+        self.stop()
 
-#turning functions
-def turn_right_90():
-    motor_left_forward(0.5)   # right wheel reverse 50% speed
-    motor_right_backward(0.5)   # left wheel forward 50% speed
-    
-    time.sleep(0.7)  # change by testing irl
-    
-    motor_stop()
+    def stop(self):
+        if self.brake:
+            # active brake (both inputs high) for snappier stops
+            self.in_a.value(1); self.in_b.value(1)
+        else:
+            # coast (both inputs low)
+            self.in_a.value(0); self.in_b.value(0)
+        _set_pwm(self.en, 0.0)
 
-def turn_left_90():
-    motor_left_backward(0.5)   # left wheel reverse 50% speed
-    motor_right_forward(0.5)   # right wheel forward 50% speed
-    
-    time.sleep(0.7)  # change by testing irl
-    
-    motor_stop()
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False)   # set brake_stop=True if you want sharper stops
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False)
+
+def motor_left_spin(duration, speed):   motor_left.spin(duration, speed)
+def motor_right_spin(duration, speed):  motor_right.spin(duration, speed)
+
+# spin both motors together
+def motors_spin(duration, speed_left, speed_right):
+    motor_left.set(speed_left)
+    motor_right.set(speed_right)
+    time.sleep(duration)
+    motor_left.stop()
+    motor_right.stop()
+
+# ----- examples -----
+# motor_left_spin(2, 50)     # left motor forward at 50% for 2s, then stop
+# motor_right_spin(5, -100)  # right motor backward at 100% for 5s, then stop
+# motors_spin(1.2, 80, 80)   # drive straight (both forward) for 1.2s
+

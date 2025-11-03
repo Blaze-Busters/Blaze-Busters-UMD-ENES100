@@ -5,7 +5,7 @@ import time
 # Left motor
 IN1 = Pin(18, Pin.OUT)
 IN2 = Pin(19, Pin.OUT)
-ENA = PWM(Pin(22))        
+ENA = PWM(Pin(22))         
 
 # Right motor
 IN3 = Pin(21, Pin.OUT)
@@ -24,20 +24,21 @@ for p in (IN1, IN2, IN3, IN4):
 def _set_pwm(pwm, frac):  # frac: 0.0..1.0
     if frac < 0:  frac = 0.0
     if frac > 1:  frac = 1.0
+    # Use duty_u16 for Pico (16-bit) or duty() for older/other MicroPython (10-bit)
     try:
         pwm.duty_u16(int(frac * 65535))
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
-# ----- Generic DC motor wrapper with the same API as your servo.spin -----GPT
+# ----- Generic DC motor wrapper with the same API as your servo.spin -----
 class DCMotor:
     def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM, brake_stop=False, invert=False):
         self.in_a = in_a
         self.in_b = in_b
-        self.en    = en_pwm
-        self.brake = brake_stop   # False = coast stop; True = active brake
-        self.inv   = invert       # flip direction if your wiring is reversed
-        self.stop()               # start stopped
+        self.en   = en_pwm
+        self.brake = brake_stop    # False = coast stop; True = active brake
+        self.inv   = invert        # flip direction if your wiring is reversed
+        self.stop()                # start stopped
 
     def _dir(self, forward=True):
         fwd = forward ^ self.inv
@@ -75,11 +76,11 @@ class DCMotor:
             self.in_a.value(0); self.in_b.value(0)
         _set_pwm(self.en, 0.0)
 
-motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False)   # set brake_stop=True if you want sharper stops
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False)  # set brake_stop=True if you want sharper stops
 motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False)
 
-def motor_left_spin(duration, speed):   motor_left.spin(duration, speed)
-def motor_right_spin(duration, speed):  motor_right.spin(duration, speed)
+def motor_left_spin(duration, speed):  motor_left.spin(duration, speed)
+def motor_right_spin(duration, speed): motor_right.spin(duration, speed)
 
 # spin both motors together
 def motors_spin(duration, speed_left, speed_right):
@@ -88,9 +89,8 @@ def motors_spin(duration, speed_left, speed_right):
     time.sleep(duration)
     motor_left.stop()
     motor_right.stop()
-
+    
 # ----- examples -----
-# motor_left_spin(2, 50)     # left motor forward at 50% for 2s, then stop
-# motor_right_spin(5, -100)  # right motor backward at 100% for 5s, then stop
-# motors_spin(1.2, 80, 80)   # drive straight (both forward) for 1.2s
-
+#motor_left_spin(10, 50)      # left motor forward at 50% for 2s, then stop
+#motor_right_spin(10, -100)  # right motor backward at 100% for 5s, then stop
+motors_spin(10, 80, 80)    # drive straight (both forward) for 1.2s

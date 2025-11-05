@@ -1,3 +1,6 @@
+from machine import Pin, PWM
+import time
+
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
 
     # list of all sensors

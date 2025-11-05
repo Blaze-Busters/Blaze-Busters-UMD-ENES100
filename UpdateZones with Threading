@@ -9,6 +9,7 @@ Z1_MAX = 0.80
 Z2_MAX = 2.80
 Z3_MAX = 3.80
 
+
 button_start = Pin(16, Pin.IN, Pin.PULL_UP)
 
 # ==== GLOBAL POSITION VARIABLES (auto-updated thread) ====

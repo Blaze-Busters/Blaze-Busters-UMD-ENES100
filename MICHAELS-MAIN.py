@@ -23,9 +23,6 @@ FS4 = Pin(39, Pin.IN)
 
 #SERVO SETUP
 servo = PWM(Pin(16), freq=50)
-# pot = ADC(Pin(4))
-# pot.atten(ADC.ATTN_11DB)
-# pot.width(ADC.WIDTH_10BIT) 
 
 #MOTOR DRIVER SETUP
 ENA = Pin(22, Pin.OUT)

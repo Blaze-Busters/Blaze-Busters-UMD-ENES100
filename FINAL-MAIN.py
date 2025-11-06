@@ -182,3 +182,5 @@ fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 '''
 
+#ORIENTATION FUNCTION *gulp*
+

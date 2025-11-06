@@ -1,6 +1,7 @@
 from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 from enes100 import enes100
+import threading
 import time
 
 #ULTRASONIC SENSOR PINS

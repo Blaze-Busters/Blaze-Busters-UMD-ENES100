@@ -148,4 +148,32 @@ motors_spin(10, 80, 80)    #first 80 left motor
 '''
 
 #CANDLE CHECK FUNCTION
+def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame, *, active_low=True, stable=False, samples=5, delay_ms=2): #i asked gpt to add debouncing, resulted in more parameters
+
+    sensors = [left_flame, right_flame, front_flame, back_flame]
+
+    # Helper: read each sensor (optionally with simple debouncing)
+    def read_value(sensor):
+        if not stable:
+            return sensor.value()
+        # Majority vote across quick reads
+        from time import sleep_ms
+        ones = 0
+        for _ in range(samples):
+            ones += sensor.value()
+            sleep_ms(delay_ms)
+        return 1 if ones >= (samples // 2 + 1) else 0
+    #end helper
+
+    # count how many sensors detect fire
+    expected = 0 if active_low else 1
+    fire_count = sum(read_value(s) == expected for s in sensors)
+
+    # total flames lit
+    total_flames = fire_count + 1
+    return total_flames
+
+numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4)
+fire_emoji = "🔥" * numberLit
+print(f"Candles Lit: {fire_emoji}")
 

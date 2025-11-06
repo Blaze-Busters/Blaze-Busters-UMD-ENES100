@@ -83,8 +83,6 @@ def update_sensors():
 
         time.sleep(0.1)   # Update at 10Hz
 
-
-# Start the thread on ESP32
 _thread.start_new_thread(update_sensors, ())
 '''GUIDE: distance=distance_cm(trig,echo)'''
 

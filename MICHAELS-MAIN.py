@@ -52,7 +52,7 @@ spin(5,-100) #spin backward
 '''
 
 #ULTRASOUND
-def distance_cm():
+def distance_cm(): '''varun make sure this is right idk some pins changed its probs fine but im paranoid'''
     TRIG.value(0)
     sleep_us(2)
     TRIG.value(1)

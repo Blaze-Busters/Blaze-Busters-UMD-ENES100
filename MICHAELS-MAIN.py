@@ -172,8 +172,11 @@ def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame, *, ac
     # total flames lit
     total_flames = fire_count + 1
     return total_flames
+'''
+CALL FUNCTION: numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4,stable=True) YOU CAN REMOVE STABLE TO REMOVE DEBOUNCING
 
-numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4)
+BELOW PRINTS OUT RESULT OF FUNCTION
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
+'''
 

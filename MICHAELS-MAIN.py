@@ -21,9 +21,6 @@ FS2 = Pin(25, Pin.IN)
 FS3 = Pin(26, Pin.IN)
 FS4 = Pin(39, Pin.IN)
 
-#SERVO SETUP
-servo = PWM(Pin(16), freq=50)
-
 #MOTOR DRIVER SETUP
 ENA = Pin(22, Pin.OUT)
 IN1 = Pin(18, Pin.OUT)
@@ -31,3 +28,30 @@ IN2 = Pin(19, Pin.OUT)
 ENB = Pin(23, Pin.OUT)
 IN3 = Pin(21, Pin.OUT)
 IN4 = Pin(4, Pin.OUT)
+#SERVO PIN
+servo = PWM(Pin(16), freq=50)
+
+#SERVO FUNCTION
+def spin(duration, speed):
+    STOP_DUTY = 77
+    MAX_RANGE = 25
+
+    #speed
+    speed = max(-100, min(100, speed))
+
+    #convert speed (-100..100) → duty (52..102)
+    duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
+    servo.duty(duty)
+
+    #spin for desired duration
+    time.sleep(duration)
+
+    # Stop servo
+    servo.duty(STOP_DUTY)
+
+'''
+GUIDE: SERVO
+spin(2,50) #spin forward
+spin(5,-100) #spin backward
+'''
+

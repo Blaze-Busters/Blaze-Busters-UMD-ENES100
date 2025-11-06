@@ -65,7 +65,7 @@ def distance_cm():
     
     dist_cm = (duration / 2) * 0.0343
     return dist_cm
-
+'''GUIDE: distance=distance_cm(trig,echo)'''
 
 #MOTOR FUNCTIONS
 # PWM frequency

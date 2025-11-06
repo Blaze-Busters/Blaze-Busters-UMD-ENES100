@@ -2,6 +2,7 @@ from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 from enes100 import enes100
 import threading
+import _thread #lowk idk if its this or the one above
 import time
 
 #ULTRASONIC SENSOR PINS

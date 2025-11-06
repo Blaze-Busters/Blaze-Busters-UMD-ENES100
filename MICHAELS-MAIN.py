@@ -51,8 +51,9 @@ spin(2,50) #spin forward
 spin(5,-100) #spin backward
 '''
 
-#ULTRASOUND
-def distance_cm(): '''varun make sure this is right idk some pins changed its probs fine but im paranoid'''
+#ULTRASOUND 
+#Varun pls finish this section love ya
+def distance_cm(): 
     TRIG.value(0)
     sleep_us(2)
     TRIG.value(1)
@@ -63,6 +64,7 @@ def distance_cm(): '''varun make sure this is right idk some pins changed its pr
     
     dist_cm = (duration / 2) * 0.0343
     return dist_cm
+
 
 #MOTOR FUNCTIONS
 # PWM frequency

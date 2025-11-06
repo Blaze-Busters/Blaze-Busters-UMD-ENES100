@@ -1,8 +1,7 @@
 from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 from enes100 import enes100
-import threading
-import _thread #lowk idk if its this or the one above...sofi ik u used threating but im pretty sure on esp32 its _thread. lets look into the threading for esp32 next class
+import _thread
 import time
 
 #ULTRASONIC SENSOR PINS
@@ -209,6 +208,14 @@ def classify_position(left_distance, right_distance):
         # OTV  is facing unlabeld side 
     else:
         return "Unknown — values do not match any option."
+#VICTOR DANCE
+def victory_dance():
+    move(.5,100,100)
+    move(.3,-50,100)
+    move(.3,-100,-100)
+    move(.3,-50,100)
+    move(.3,50,-100)
+    #i think shimining
 
 #NAVIGATION RUN
 def update_position():
@@ -220,8 +227,7 @@ def update_position():
         theta = enes100.theta()
 
 # start background pose updater
-thread = threading.Thread(target=update_position, daemon=True)
-thread.start()
+_thread.start_new_thread(update_position, ())
 # state matchine definitions
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
 state = IDLE

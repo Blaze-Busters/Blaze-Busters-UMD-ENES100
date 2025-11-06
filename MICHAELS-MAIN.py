@@ -35,17 +35,13 @@ servo = PWM(Pin(16), freq=50)
 def spin(duration, speed):
     STOP_DUTY = 77
     MAX_RANGE = 25
-
     #speed
     speed = max(-100, min(100, speed))
-
     #convert speed (-100..100) → duty (52..102)
     duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
     servo.duty(duty)
-
     #spin for desired duration
     time.sleep(duration)
-
     # Stop servo
     servo.duty(STOP_DUTY)
 
@@ -55,3 +51,15 @@ spin(2,50) #spin forward
 spin(5,-100) #spin backward
 '''
 
+#ULTRASOUND
+def distance_cm():
+    TRIG.value(0)
+    sleep_us(2)
+    TRIG.value(1)
+    sleep_us(10)
+    TRIG.value(0)
+    
+    duration = time_pulse_us(ECHO, 1, 30000)  # 30ms timeout
+    
+    dist_cm = (duration / 2) * 0.0343
+    return dist_cm

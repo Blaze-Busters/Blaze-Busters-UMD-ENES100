@@ -2,7 +2,7 @@ from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 from enes100 import enes100
 import threading
-import _thread #lowk idk if its this or the one above...sofi ik u used threating but im pretty sure on esp32 its _thread
+import _thread #lowk idk if its this or the one above...sofi ik u used threating but im pretty sure on esp32 its _thread. lets look into the threading for esp32 next class
 import time
 
 #ULTRASONIC SENSOR PINS

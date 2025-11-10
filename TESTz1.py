@@ -21,5 +21,5 @@ while not (1.541 < theta < 1.599):
   motors_spin(0.1, -0.3, 0.3)
   pass
 
-motors_spin(0.1, 0.3, 0.3)
+motors_spin(7, 0.3, 0.3)
  pass

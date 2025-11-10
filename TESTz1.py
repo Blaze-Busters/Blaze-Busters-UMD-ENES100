@@ -19,7 +19,7 @@ ENB = PWM(Pin(23))
 while not (1.541 < theta < 1.599):
   # spin OTV to face correct direction
   motors_spin(0.1, -0.3, 0.3)
-    pass
+  pass
 
 motors_spin(0.1, 0.3, 0.3)
  pass

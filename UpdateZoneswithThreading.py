@@ -1,12 +1,13 @@
 import time
-import threading
+import _thread
+from time import sleep_us, sleep
 from enes100 import enes100
-from machine import Pin, PWM
+from machine import Pin, time_pulse_us, ADC, PWM
 from NusCmandles import number_of_flames_lit
 from MotorControlFunctions import DCMotor, motor_left, motor_right, motors_spin
 #motors_spin(duration, speed_left, speed_right) main function used
 from Orientation import classify_position
-from main import distance_cm
+
 # ==== CONSTANTS ====
 UPDATE_MS = 1000  # 1 second update rate
 Z1_MAX = 0.80
@@ -60,8 +61,7 @@ def update_position():
         theta = enes100.theta()
 
 # start background pose updater
-thread = threading.Thread(target=update_position, daemon=True)
-thread.start()
+_thread.start_new_thread(update_position, ())
 
 #MOTOR PWM SETUP
 # PWM frequency
@@ -81,6 +81,36 @@ def _set_pwm(pwm, frac):  # frac: 0.0..1.0
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
+# Distance function
+def distance_cm(trig, echo):
+    trig.value(0)
+    sleep_us(2)
+    trig.value(1)
+    sleep_us(10)
+    trig.value(0)
+    duration = time_pulse_us(echo, 1, 30000)
+    dist_cm = (duration / 2) * 0.0343
+    return dist_cm
+
+front_sensor = 0
+left_sensor_side = 0
+right_sensor_side = 0
+left_sensor_down = 0
+right_sensor_down = 0
+
+def update_sensors():
+    global front_sensor, left_sensor_side, right_sensor_side, left_sensor_down, right_sensor_down
+    while True:
+        front_sensor = distance_cm(TRIG5, ECHO5)
+        left_sensor_side = distance_cm(TRIG1, ECHO1)
+        right_sensor_side = distance_cm(TRIG2, ECHO2)
+        left_sensor_down = distance_cm(TRIG3, ECHO3)
+        right_sensor_down = distance_cm(TRIG4, ECHO4)
+
+        time.sleep(0.1)   # Update at 10Hz
+
+_thread.start_new_thread(update_sensors, ())
+'''GUIDE: distance=distance_cm(trig,echo)'''
 
 # ==== STATE MACHINE DEFINITIONS ====
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)

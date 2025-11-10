@@ -1,5 +1,6 @@
 import time
 from time import sleep_us, sleep
+import _thread
 from enes100 import enes100
 from machine import Pin, time_pulse_us, ADC, PWM
 from MotorControlFunctions import DCMotor, motor_left, motor_right, motors_spin
@@ -15,6 +16,21 @@ ENA = PWM(Pin(22))
 IN3 = Pin(21, Pin.OUT)
 IN4 = Pin(4,  Pin.OUT)
 ENB = PWM(Pin(23))
+
+x = 0
+y = 0
+theta = 0
+
+def update_position():
+    global x, y, theta
+    while True:
+        time.sleep(1)   # update every second
+        x = enes100.x()
+        y = enes100.y()
+        theta = enes100.theta()
+
+# start background pose updater
+_thread.start_new_thread(update_position, ())
 
 while not (1.541 < theta < 1.599):
   # spin OTV to face correct direction

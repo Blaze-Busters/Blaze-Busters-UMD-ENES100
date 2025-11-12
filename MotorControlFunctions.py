@@ -93,4 +93,4 @@ def motors_spin(duration, speed_left, speed_right):
 # ----- examples -----
 #motor_left_spin(10, 50)      # left motor forward at 50% for 2s, then stop
 #motor_right_spin(10, -100)  # right motor backward at 100% for 5s, then stop
-motors_spin(10, 80, 80)    # drive straight (both forward) for 1.2s
+motors_spin(100, -100, 49)    # drive straight (both forward) for 1.2s

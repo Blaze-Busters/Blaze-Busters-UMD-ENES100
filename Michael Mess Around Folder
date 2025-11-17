@@ -1,0 +1,107 @@
+from machine import Pin, PWM
+import time
+
+# -----Pin map-----
+# Left motor
+IN1 = Pin(18, Pin.OUT)
+IN2 = Pin(19, Pin.OUT)
+ENA = PWM(Pin(22))
+
+# Right motor
+IN3 = Pin(21, Pin.OUT)
+IN4 = Pin(4,  Pin.OUT)
+ENB = PWM(Pin(23))
+
+# Set PWM frequency
+for en in (ENA, ENB):
+    en.freq(1000)
+
+# Make sure everything starts safe
+for p in (IN1, IN2, IN3, IN4):
+    p.value(0)
+
+# ----- PWM helper -----
+def _set_pwm(pwm, frac):  # frac: 0.0..1.0
+    if frac < 0:  frac = 0.0
+    if frac > 1:  frac = 1.0
+    try:
+        pwm.duty_u16(int(frac * 65535))
+    except AttributeError:
+        pwm.duty(int(frac * 1023))
+
+
+# ----- DC Motor class with GAIN (balancing) -----
+class DCMotor:
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
+                 brake_stop=False, invert=False, gain=1.0):
+        self.in_a = in_a
+        self.in_b = in_b
+        self.en   = en_pwm
+        self.brake = brake_stop
+        self.inv   = invert
+        self.gain  = gain     # <<< balancing factor
+        self.stop()
+
+    def _dir(self, forward=True):
+        fwd = forward ^ self.inv
+        if fwd:
+            self.in_a.value(1); self.in_b.value(0)
+        else:
+            self.in_a.value(0); self.in_b.value(1)
+
+    def set(self, speed):
+        if speed is None:
+            speed = 0
+
+        # apply balancing gain
+        speed = speed * self.gain
+
+        # clamp
+        if speed > 100:  speed = 100
+        if speed < -100: speed = -100
+
+        if speed == 0:
+            self.stop()
+            return
+
+        self._dir(forward=(speed > 0))
+        mag = abs(speed) / 100.0
+        _set_pwm(self.en, mag)
+
+    def spin(self, duration, speed):
+        self.set(speed)
+        time.sleep(duration)
+        self.stop()
+
+    def stop(self):
+        if self.brake:
+            self.in_a.value(1); self.in_b.value(1)
+        else:
+            self.in_a.value(0); self.in_b.value(0)
+        _set_pwm(self.en, 0.0)
+
+
+# ----- CREATE MOTORS WITH BALANCING -----
+# Adjust gain values until robot drives straight
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=0.80)  # <<< reduce left power
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1.00)  # <<< right full power
+
+
+# ----- helper functions -----
+def motor_left_spin(duration, speed):  
+    motor_left.spin(duration, speed)
+
+def motor_right_spin(duration, speed): 
+    motor_right.spin(duration, speed)
+
+def motors_spin(duration, speed_left, speed_right):
+    motor_left.set(speed_left)
+    motor_right.set(speed_right)
+    time.sleep(duration)
+    motor_left.stop()
+    motor_right.stop()
+
+
+# ----- EXAMPLE -----
+# Move forward with both motors
+motors_spin(5, 100, 100)

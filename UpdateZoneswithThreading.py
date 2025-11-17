@@ -52,16 +52,11 @@ x = 0
 y = 0
 theta = 0
 
-def update_position():
+def update_pose():
     global x, y, theta
-    while True:
-        time.sleep(1)   # update every second
-        x = enes100.x()
-        y = enes100.y()
-        theta = enes100.theta()
-
-# start background pose updater
-_thread.start_new_thread(update_position, ())
+    x = enes100.x()
+    y = enes100.y()
+    theta = enes100.theta()
 
 #MOTOR PWM SETUP
 # PWM frequency
@@ -131,18 +126,24 @@ while True:
                 # face +pi/2 (1.541 to 1.599 rad)
                 while not (1.541 < theta < 1.599):
                     motors_spin(1, 50, -50)
+                    update_pose()
                     pass
                 
-                # move forward
+                motors_spin(1, 50, -50)
+                update_pose()
+                #detect number of flames
+                #extengiuish flames             
                 pass
 
             else:
                 # face -pi/2 (-1.599 to -1.541 rad)
                 while not (-1.599 < theta < -1.541):
                     motors_spin(1, 50, -50)
+                    update_pose()
                     pass
 
                 motors_spin(7, 50, 50)
+                update_pose()
                 pass
 
             # extinguish flames here

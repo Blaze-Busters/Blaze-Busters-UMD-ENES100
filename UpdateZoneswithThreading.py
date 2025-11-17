@@ -130,7 +130,7 @@ while True:
             if y < 1.3:
                 # face +pi/2 (1.541 to 1.599 rad)
                 while not (1.541 < theta < 1.599):
-                    # spin OTV to face correct direction
+                    motors_spin(1, 50, -50)
                     pass
                 
                 # move forward
@@ -139,10 +139,10 @@ while True:
             else:
                 # face -pi/2 (-1.599 to -1.541 rad)
                 while not (-1.599 < theta < -1.541):
-                    # spin to correct direction
+                    motors_spin(1, 50, -50)
                     pass
 
-                # move forward
+                motors_spin(7, 50, 50)
                 pass
 
             # extinguish flames here

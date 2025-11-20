@@ -264,7 +264,8 @@ while True:
             if y < 1.3:
                 # face +pi/2 (1.541 to 1.599 rad)
                 while not (1.541 < theta < 1.599):
-                    # spin OTV to face correct direction
+                    # spin tiny bit
+                    #call updateposition
                     pass
                 
                 # move forward

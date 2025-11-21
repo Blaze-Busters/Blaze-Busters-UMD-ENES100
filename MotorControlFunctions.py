@@ -5,40 +5,42 @@ import time
 # Left motor
 IN1 = Pin(18, Pin.OUT)
 IN2 = Pin(19, Pin.OUT)
-ENA = PWM(Pin(22))         
+ENA = PWM(Pin(22))
 
 # Right motor
 IN3 = Pin(21, Pin.OUT)
 IN4 = Pin(4,  Pin.OUT)
 ENB = PWM(Pin(23))
 
-# PWM frequency
+# Set PWM frequency
 for en in (ENA, ENB):
     en.freq(1000)
 
-# Make sure everything starts safe
+# Make everything safe
 for p in (IN1, IN2, IN3, IN4):
     p.value(0)
 
 # ----- PWM helper -----
-def _set_pwm(pwm, frac):  # frac: 0.0..1.0
+def _set_pwm(pwm, frac):
     if frac < 0:  frac = 0.0
     if frac > 1:  frac = 1.0
-    # Use duty_u16 for Pico (16-bit) or duty() for older/other MicroPython (10-bit)
     try:
         pwm.duty_u16(int(frac * 65535))
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
-# ----- Generic DC motor wrapper with the same API as your servo.spin -----
+
+# ----- DC Motor class -----
 class DCMotor:
-    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM, brake_stop=False, invert=False):
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
+                 brake_stop=False, invert=False, gain=1.0):
         self.in_a = in_a
         self.in_b = in_b
         self.en   = en_pwm
-        self.brake = brake_stop    # False = coast stop; True = active brake
-        self.inv   = invert        # flip direction if your wiring is reversed
-        self.stop()                # start stopped
+        self.brake = brake_stop
+        self.inv   = invert
+        self.gain  = gain
+        self.stop()
 
     def _dir(self, forward=True):
         fwd = forward ^ self.inv
@@ -47,50 +49,68 @@ class DCMotor:
         else:
             self.in_a.value(0); self.in_b.value(1)
 
-    def set(self, speed):
-        # clamp and split into direction + magnitude
+    def prepare_start(self, speed):
+        """Set direction and return final speed with gain applied."""
         if speed is None:
             speed = 0
-        if speed > 100:  speed = 100
-        if speed < -100: speed = -100
 
+        speed *= self.gain
+        speed = max(min(speed, 100), -100)
+
+        if speed == 0:
+            return 0
+
+        self._dir(forward=(speed > 0))
+        return speed
+
+    def apply_pwm(self, speed):
+        """Apply steady-state (non-kick) speed."""
         if speed == 0:
             self.stop()
             return
 
-        self._dir(forward=(speed > 0))
-        mag = abs(speed) / 100.0
-        _set_pwm(self.en, mag)
-
-    def spin(self, duration, speed):
-        self.set(speed)
-        time.sleep(duration)
-        self.stop()
+        _set_pwm(self.en, abs(speed) / 100.0)
 
     def stop(self):
         if self.brake:
-            # active brake (both inputs high) for snappier stops
             self.in_a.value(1); self.in_b.value(1)
         else:
-            # coast (both inputs low)
             self.in_a.value(0); self.in_b.value(0)
         _set_pwm(self.en, 0.0)
 
-motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False)  # set brake_stop=True if you want sharper stops
-motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False)
 
-def motor_left_spin(duration, speed):  motor_left.spin(duration, speed)
-def motor_right_spin(duration, speed): motor_right.spin(duration, speed)
+# ----- CREATE MOTORS -----
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
-# spin both motors together
-def motors_spin(duration, speed_left, speed_right):
-    motor_left.set(speed_left)
-    motor_right.set(speed_right)
+
+# ----- Synchronized dual motor spin with equal kick -----
+def motors_spin(duration, speed_left, speed_right, kick_time=0.1):
+
+    # 1) Prepare both (compute speed + set direction)
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    if sL == 0 and sR == 0:
+        time.sleep(duration)
+        return
+
+    # 2) Kick start — simultaneous full power on both motors
+    if sL != 0: _set_pwm(ENA, 1.0)
+    if sR != 0: _set_pwm(ENB, 1.0)
+    time.sleep(kick_time)
+
+    # 3) Apply normal PWM to both
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
     time.sleep(duration)
+
+    # 4) Stop both
     motor_left.stop()
     motor_right.stop()
-    
-# ----- examples -----
-#motor_left_spin(10, 50)      # left motor forward at 50% for 2s, then stop
-#motor_right_spin(10, -100)  # right motor backward at 100% for 5s, then stop
-motors_spin(100, -100, 49)    # drive straight (both forward) for 1.2s
+
+
+# ----- TEST -----
+motors_spin(15, -20, 20)
+

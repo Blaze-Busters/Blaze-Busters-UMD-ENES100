@@ -104,8 +104,6 @@ def update_sensors():
 
         time.sleep(0.1)   # Update at 10Hz
 
-_thread.start_new_thread(update_sensors, ())
-'''GUIDE: distance=distance_cm(trig,echo)'''
 
 # ==== STATE MACHINE DEFINITIONS ====
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
@@ -159,7 +157,6 @@ while True:
             # ultrasound_front = ???
 
             while ultrasound_front > 10:
-                # move forward
                 pass
 
             if ultrasound_front < 10:

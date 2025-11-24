@@ -120,13 +120,50 @@ def motors_spin(duration, speed_left, speed_right,
     # Stop at the end
     motor_left.stop()
     motor_right.stop()
+    
+
+# ----- Continuous motor control (ON/OFF) -----
+
+def motor_on(speed_left, speed_right,
+             kick_time=0.1,
+             kick_left_strength=100,
+             kick_right_strength=100):
+
+    # Prepare direction
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    if sL == 0 and sR == 0:
+        return
+
+    # Convert strength % → duty fraction
+    kL = max(0, min(kick_left_strength, 100)) / 100.0
+    kR = max(0, min(kick_right_strength, 100)) / 100.0
+
+    # Kick phase
+    if sL != 0: _set_pwm(ENA, kL)
+    if sR != 0: _set_pwm(ENB, kR)
+    time.sleep(kick_time)
+
+    # Hold steady speed
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
+
+def motor_off():
+    motor_left.stop()
+    motor_right.stop()
 
 
 # ----- TEST -----
-# Left kick = 90%, Right kick = 60%
-motors_spin(15, -20, 26,
+#FIRST FUNCTION
+motors_spin(5, 80, 80,
             kick_time=0.1,
             kick_left_strength=90,
             kick_right_strength=100)
+#SECOND FUNCTION
+motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
+motor_off()
+
 
 

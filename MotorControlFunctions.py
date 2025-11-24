@@ -84,10 +84,16 @@ motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
 motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
 
-# ----- Synchronized dual motor spin with equal kick -----
-def motors_spin(duration, speed_left, speed_right, kick_time=0.1):
+# ----- motors_spin with INDEPENDENT KICK STRENGTH -----
+def motors_spin(duration, speed_left, speed_right,
+                kick_time=0.1,
+                kick_left_strength=100,   # 0–100
+                kick_right_strength=100): # 0–100
+    """
+    kick_left_strength / kick_right_strength: percent power during kick
+    """
 
-    # 1) Prepare both (compute speed + set direction)
+    # Prepare (set direction)
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
@@ -95,22 +101,32 @@ def motors_spin(duration, speed_left, speed_right, kick_time=0.1):
         time.sleep(duration)
         return
 
-    # 2) Kick start — simultaneous full power on both motors
-    if sL != 0: _set_pwm(ENA, 1.0)
-    if sR != 0: _set_pwm(ENB, 1.0)
+    # Convert strength % → duty fraction (0–1)
+    kL = max(0, min(kick_left_strength, 100)) / 100.0
+    kR = max(0, min(kick_right_strength, 100)) / 100.0
+
+    # Kick both motors using their individual strengths
+    if sL != 0: _set_pwm(ENA, kL)
+    if sR != 0: _set_pwm(ENB, kR)
+
     time.sleep(kick_time)
 
-    # 3) Apply normal PWM to both
+    # Steady PWM
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
 
     time.sleep(duration)
 
-    # 4) Stop both
+    # Stop at the end
     motor_left.stop()
     motor_right.stop()
 
 
 # ----- TEST -----
-motors_spin(15, -20, 20)
+# Left kick = 90%, Right kick = 60%
+motors_spin(15, -20, 26,
+            kick_time=0.1,
+            kick_left_strength=90,
+            kick_right_strength=100)
+
 

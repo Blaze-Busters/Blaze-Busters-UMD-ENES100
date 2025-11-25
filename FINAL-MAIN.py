@@ -4,7 +4,7 @@ from enes100 import enes100
 import _thread
 import time
 
-#ULTRASONIC SENSOR PINS
+# ----------------- ULTRASONIC SENSOR PINS -----------------
 TRIG1 = Pin(13, Pin.OUT)
 ECHO1 = Pin(32, Pin.IN)
 TRIG2 = Pin(12, Pin.OUT)
@@ -16,56 +16,60 @@ ECHO4 = Pin(35, Pin.IN)
 TRIG5 = Pin(5, Pin.OUT)
 ECHO5 = Pin(36, Pin.IN)
 
-#FLAME SENSOR PINS
+# ----------------- FLAME SENSOR PINS -----------------
 FS1 = Pin(17, Pin.IN)
 FS2 = Pin(25, Pin.IN)
 FS3 = Pin(26, Pin.IN)
 FS4 = Pin(39, Pin.IN)
 
-#MOTOR DRIVER SETUP
-ENA = Pin(22, Pin.OUT)
+# ----------------- MOTOR DRIVER SETUP -----------------
+ENA = PWM(Pin(22), freq=1000)
 IN1 = Pin(18, Pin.OUT)
 IN2 = Pin(19, Pin.OUT)
-ENB = Pin(23, Pin.OUT)
+ENB = PWM(Pin(23), freq=1000)
 IN3 = Pin(21, Pin.OUT)
 IN4 = Pin(4, Pin.OUT)
-#SERVO PIN
+
+# ----------------- SERVO PIN -----------------
 servo = PWM(Pin(16), freq=50)
 
-#SERVO FUNCTION
+# ----------------- START BUTTON -----------------
+button_start = Pin(15, Pin.IN, Pin.PULL_UP)  # adjust pin if needed
+
+# ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
     STOP_DUTY = 77
     MAX_RANGE = 25
-    #speed
+    # speed clamp
     speed = max(-100, min(100, speed))
-    #convert speed (-100..100) → duty (52..102)
+    # convert speed (-100..100) → duty (~52..102)
     duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
     servo.duty(duty)
-    #spin for desired duration
     time.sleep(duration)
-    # Stop servo
+    # stop servo
     servo.duty(STOP_DUTY)
 
 '''
 GUIDE: SERVO
-spin(2,50) #spin forward
-spin(5,-100) #spin backward
+spin(2,50)   # spin forward
+spin(5,-100) # spin backward
 '''
 
-#ULTRASOUND
-#fix threading
+# ----------------- ULTRASOUND -----------------
 def distance_cm(trig, echo):
     trig.value(0)
     time.sleep_us(2)
     trig.value(1)
     time.sleep_us(10)
     trig.value(0)
-    
-    duration = machine.time_pulse_us(echo, 1, 30000)  # wait for echo HIGH max 30ms
+
+    duration = time_pulse_us(echo, 1, 30000)  # wait for echo HIGH max 30ms
+    if duration <= 0:
+        return 999  # no echo detected
     dist_cm = (duration / 2) * 0.0343
     return dist_cm
 
-#sensor readings
+# sensor readings (globals updated in a thread)
 front_sensor = 0
 left_sensor_side = 0
 right_sensor_side = 0
@@ -80,20 +84,9 @@ def update_sensors():
         right_sensor_side = distance_cm(TRIG2, ECHO2)
         left_sensor_down = distance_cm(TRIG3, ECHO3)
         right_sensor_down = distance_cm(TRIG4, ECHO4)
-
         time.sleep(0.1)   # Update at 10Hz
 
-
-#MOTOR FUNCTIONS
-# Set PWM frequency
-for en in (ENA, ENB):
-    en.freq(1000)
-
-# Make everything safe
-for p in (IN1, IN2, IN3, IN4):
-    p.value(0)
-
-# ----- PWM helper -----
+# ----------------- MOTOR HELPERS -----------------
 def _set_pwm(pwm, frac):
     if frac < 0:  frac = 0.0
     if frac > 1:  frac = 1.0
@@ -102,8 +95,6 @@ def _set_pwm(pwm, frac):
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
-
-# ----- DC Motor class -----
 class DCMotor:
     def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
                  brake_stop=False, invert=False, gain=1.0):
@@ -123,7 +114,6 @@ class DCMotor:
             self.in_a.value(0); self.in_b.value(1)
 
     def prepare_start(self, speed):
-        """Set direction and return final speed with gain applied."""
         if speed is None:
             speed = 0
 
@@ -137,11 +127,9 @@ class DCMotor:
         return speed
 
     def apply_pwm(self, speed):
-        """Apply steady-state (non-kick) speed."""
         if speed == 0:
             self.stop()
             return
-
         _set_pwm(self.en, abs(speed) / 100.0)
 
     def stop(self):
@@ -151,22 +139,15 @@ class DCMotor:
             self.in_a.value(0); self.in_b.value(0)
         _set_pwm(self.en, 0.0)
 
-
 # ----- CREATE MOTORS -----
 motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
 motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
-
 # ----- motors_spin with INDEPENDENT KICK STRENGTH -----
 def motors_spin(duration, speed_left, speed_right,
                 kick_time=0.1,
-                kick_left_strength=100,   # 0–100
-                kick_right_strength=100): # 0–100
-    """
-    kick_left_strength / kick_right_strength: percent power during kick
-    """
-
-    # Prepare (set direction)
+                kick_left_strength=100,
+                kick_right_strength=100):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
@@ -174,61 +155,49 @@ def motors_spin(duration, speed_left, speed_right,
         time.sleep(duration)
         return
 
-    # Convert strength % → duty fraction (0–1)
     kL = max(0, min(kick_left_strength, 100)) / 100.0
     kR = max(0, min(kick_right_strength, 100)) / 100.0
 
-    # Kick both motors using their individual strengths
     if sL != 0: _set_pwm(ENA, kL)
     if sR != 0: _set_pwm(ENB, kR)
-
     time.sleep(kick_time)
 
-    # Steady PWM
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
 
     time.sleep(duration)
 
-    # Stop at the end
     motor_left.stop()
     motor_right.stop()
-    
 
 # ----- Continuous motor control (ON/OFF) -----
-
 def motor_on(speed_left, speed_right,
              kick_time=0.1,
              kick_left_strength=100,
              kick_right_strength=100):
 
-    # Prepare direction
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
     if sL == 0 and sR == 0:
         return
 
-    # Convert strength % → duty fraction
     kL = max(0, min(kick_left_strength, 100)) / 100.0
     kR = max(0, min(kick_right_strength, 100)) / 100.0
 
-    # Kick phase
     if sL != 0: _set_pwm(ENA, kL)
     if sR != 0: _set_pwm(ENB, kR)
     time.sleep(kick_time)
 
-    # Hold steady speed
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
-
 
 def motor_off():
     motor_left.stop()
     motor_right.stop()
 
-
-'''GUIDE MOTOR FUNCTIONS
+'''
+GUIDE MOTOR FUNCTIONS
 #FIRST FUNCTION
 motors_spin(5, 80, 80,
             kick_time=0.1,
@@ -239,143 +208,173 @@ motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
 motor_off()
 '''
 
-#CANDLE CHECK FUNCTION
-def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame, *, active_low=True, stable=False, samples=5, delay_ms=2): #i asked gpt to add debouncing, resulted in more parameters
+# ----------------- CANDLE CHECK FUNCTION -----------------
+def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,
+                         *, active_low=True, stable=False, samples=5, delay_ms=2):
 
     sensors = [left_flame, right_flame, front_flame, back_flame]
 
-    # Helper: read each sensor (optionally with simple debouncing)
     def read_value(sensor):
         if not stable:
             return sensor.value()
-        # Majority vote across quick reads
         from time import sleep_ms
         ones = 0
         for _ in range(samples):
             ones += sensor.value()
             sleep_ms(delay_ms)
         return 1 if ones >= (samples // 2 + 1) else 0
-    #end helper
 
-    # count how many sensors detect fire
     expected = 0 if active_low else 1
     fire_count = sum(read_value(s) == expected for s in sensors)
-
-    # total flames lit
     total_flames = fire_count + 1
     return total_flames
-'''
-CALL FUNCTION: numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4,stable=True) YOU CAN REMOVE STABLE TO REMOVE DEBOUNCING
 
-BELOW PRINTS OUT RESULT OF FUNCTION
+'''
+CALL FUNCTION:
+numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 '''
 
-#ORIENTATION FUNCTION #HOW DO WE GET LEFT AND RIGHT DISTANCE
-def classify_position(left_distance, right_distance): 
-    # left sesnor is sesnor #4
-    # right sesnor is sensor #5
-    # ranges for each option
+# ----------------- ORIENTATION FUNCTION -----------------
+def classify_position(left_distance, right_distance):
     option_A = (9.4 <= left_distance <= 9.7) and (6.7 <= right_distance <= 7.3)
     option_B = (11.8 <= left_distance <= 12.3) and (9.4 <= right_distance <= 9.6)
     option_C = (9.4 <= left_distance <= 9.7) and (9.4 <= right_distance <= 9.7)
     option_D = (6.7 <= left_distance <= 7.3) and (11.8 <= right_distance <= 12.3)
 
-    # Check which option matches
     if option_A:
         return "Option A"
-        # OTV  is facing side A
     elif option_B:
         return "Option B"
-        # OTV  is facing side B 
     elif option_C:
         return "Option C"
-        # OTV  is facing side C
     elif option_D:
         return "Option D"
-        # OTV  is facing unlabeld side 
     else:
         return "Unknown — values do not match any option."
-        
-#VICTOR DANCE
-def victory_dance():
-    move(.5,100,100)
-    move(.3,-50,100)
-    move(.3,-100,-100)
-    move(.3,-50,100)
-    move(.3,50,-100)
-    #i think shimining
 
-#NAVIGATION RUN
+# ----------------- VICTORY DANCE -----------------
+def victory_dance():
+    motors_spin(0.5, 100, 100)
+    motors_spin(0.3, -50, 100)
+    motors_spin(0.3, -100, -100)
+    motors_spin(0.3, -50, 100)
+    motors_spin(0.3, 50, -100)
+
+# ----------------- NAVIGATION RUN -----------------
+
+# odometry / position globals
+x = 0.0
+y = 0.0
+theta = 0.0
+
 def update_position():
     global x, y, theta
     while True:
-        time.sleep(1)   # update every second
         x = enes100.x()
         y = enes100.y()
         theta = enes100.theta()
+        time.sleep(0.1)   # update at 10 Hz
 
-# state matchine definitions
+# ---- ZONE BOUNDARIES (TUNE THESE) ----
+Z1_MAX = 1.0  # meters
+Z2_MAX = 2.0
+Z3_MAX = 3.0
+
+# ----- Start background threads -----
+_thread.start_new_thread(update_sensors, ())
+_thread.start_new_thread(update_position, ())
+
+# ----- state machine definitions -----
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
 state = IDLE
 
 while True:
     time.sleep_ms(10)  # small loop delay
+
     # ---------- IDLE ----------
     if state == IDLE:
-        if button_start.value() == 0:
+        motor_off()
+        if button_start.value() == 0:   # button pressed (active low)
+            time.sleep(0.2)            # simple debounce
             state = ZONE1
 
     # ---------- ZONE 1 ----------
     elif state == ZONE1:
         while x < Z1_MAX:
             if y < 1.3:
-                # face +pi/2 (1.541 to 1.599 rad)
+                # face +pi/2 (roughly straight up)
                 while not (1.541 < theta < 1.599):
-                    # spin tiny bit
-                    #call updateposition
-                    pass
-                
-                # move forward
-                pass
+                    motor_on(50, -50)      # tiny spin left
+                    time.sleep(0.05)
+                    motor_off()
+
+                # move forward a bit
+                motor_on(60, 60)
+                time.sleep(0.15)
+                motor_off()
 
             else:
-                # face -pi/2 (-1.599 to -1.541 rad)
+                # face -pi/2 (roughly straight down)
                 while not (-1.599 < theta < -1.541):
-                    # spin to correct direction
-                    pass
+                    motor_on(-50, 50)      # tiny spin right
+                    time.sleep(0.05)
+                    motor_off()
 
-                # move forward
-                pass
+                # move forward a bit
+                motor_on(60, 60)
+                time.sleep(0.15)
+                motor_off()
 
-            # extinguish flames here
-            pass
-        
+            # extinguish flames here (placeholder)
+            if number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True) > 1:
+                spin(0.5, 100)  # blow briefly
+
         state = ZONE2
 
     # ---------- ZONE 2 ----------
     elif state == ZONE2:
         while Z1_MAX < x < Z2_MAX:
 
-            # read your ultrasonic sensors somewhere
-            # ultrasound_front = ???
+            # read your ultrasonic sensors
+            ultrasound_front = front_sensor
 
-            while ultrasound_front > 10:
-                # move forward
-                pass
+            # move straight until obstacle within 10 cm
+            while ultrasound_front > 10 and Z1_MAX < x < Z2_MAX:
+                motor_on(60, 60)
+                time.sleep(0.05)
+                ultrasound_front = front_sensor
+            motor_off()
 
             if ultrasound_front < 10:
                 if y > 1.5:
                     # right 90, forward until clear, left 90
-                    pass
+                    motors_spin(0.4, -60, 60)  # turn right
+                    while front_sensor < 15:
+                        motor_on(60, 60)
+                        time.sleep(0.05)
+                    motor_off()
+                    motors_spin(0.4, 60, -60)  # turn back left
+
                 elif y > 0.8:
-                    # same logic
-                    pass
+                    # same logic as above (simple placeholder)
+                    motors_spin(0.4, -60, 60)
+                    while front_sensor < 15:
+                        motor_on(60, 60)
+                        time.sleep(0.05)
+                    motor_off()
+                    motors_spin(0.4, 60, -60)
+
                 else:
                     # left 90, forward until clear, right 90
-                    pass
-        
+                    motors_spin(0.4, 60, -60)  # turn left
+                    while front_sensor < 15:
+                        motor_on(60, 60)
+                        time.sleep(0.05)
+                    motor_off()
+                    motors_spin(0.4, -60, 60)  # turn back right
+
         state = ZONE3
 
     # ---------- ZONE 3 ----------
@@ -383,18 +382,22 @@ while True:
         while Z2_MAX < x < Z3_MAX:
             if y < 1.5:
                 # turn left 90
-                while y < 1.5:
-                    # move forward
-                    pass
+                motors_spin(0.4, 60, -60)
+                while y < 1.5 and Z2_MAX < x < Z3_MAX:
+                    motor_on(60, 60)
+                    time.sleep(0.05)
+                motor_off()
             else:
                 # move forward
-                pass
+                motor_on(60, 60)
+                time.sleep(0.1)
+                motor_off()
 
         state = DONE
 
     # ---------- DONE ----------
     elif state == DONE:
-        # stop motors, celebrate, etc.
-        pass
-
-#Victory Dance?
+        motor_off()
+        victory_dance()
+        while True:
+            time.sleep(1)  # chill forever

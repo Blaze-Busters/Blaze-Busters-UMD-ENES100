@@ -277,14 +277,10 @@ def update_position():
         theta = enes100.theta()
         time.sleep(0.1)   # update at 10 Hz
 
-# ---- ZONE BOUNDARIES (TUNE THESE) ----
-Z1_MAX = 1.0  # meters
-Z2_MAX = 2.0
-Z3_MAX = 3.0
-
-# ----- Start background threads -----
-_thread.start_new_thread(update_sensors, ())
-_thread.start_new_thread(update_position, ())
+# ----ZONE BOUNDARIES----
+Z1_MAX = 0.76 #meters
+Z2_MAX = 2.75
+Z3_MAX = 3.7
 
 # ----- state machine definitions -----
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
@@ -312,7 +308,7 @@ while True:
 
                 # move forward a bit
                 motor_on(60, 60)
-                time.sleep(0.15)
+                time.sleep(2.5)
                 motor_off()
 
             else:
@@ -324,12 +320,18 @@ while True:
 
                 # move forward a bit
                 motor_on(60, 60)
-                time.sleep(0.15)
+                time.sleep(2.5)
                 motor_off()
 
             # extinguish flames here (placeholder)
             if number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True) > 1:
-                spin(0.5, 100)  # blow briefly
+                spin(10, 100)  #lower
+                spin(10,-100) #raise
+            motors_spin(4,60,-60) #backup
+            if(theta > 1):
+                motors_spin(.5,60,60) #turn to face finish line
+            else:
+                motors_spin(.5,60,-60) #turn to face finish line
 
         state = ZONE2
 
@@ -339,6 +341,8 @@ while True:
 
             # read your ultrasonic sensors
             ultrasound_front = front_sensor
+            ultrasound_right = right_sensor_side
+            ultrasound_left = left_sensor_side
 
             # move straight until obstacle within 10 cm
             while ultrasound_front > 10 and Z1_MAX < x < Z2_MAX:
@@ -349,22 +353,20 @@ while True:
 
             if ultrasound_front < 10:
                 if y > 1.5:
-                    # right 90, forward until clear, left 90
-                    motors_spin(0.4, -60, 60)  # turn right
-                    while front_sensor < 15:
+                    motors_spin(0.4, -60, 60)  # right 90°
+                    while front_sensor < 15 and Z1_MAX < x < Z2_MAX:
                         motor_on(60, 60)
                         time.sleep(0.05)
                     motor_off()
-                    motors_spin(0.4, 60, -60)  # turn back left
+                    motors_spin(0.4, 60, -60)  # left 90° back to lane
 
-                elif y > 0.8:
-                    # same logic as above (simple placeholder)
-                    motors_spin(0.4, -60, 60)
-                    while front_sensor < 15:
+                elif y < 0.5:
+                    motors_spin(0.4, 60, -60)  # left 90°
+                    while front_sensor < 15 and Z1_MAX < x < Z2_MAX:
                         motor_on(60, 60)
                         time.sleep(0.05)
                     motor_off()
-                    motors_spin(0.4, 60, -60)
+                    motors_spin(0.4, -60, 60)  # right 90° back to lane
 
                 else:
                     # left 90, forward until clear, right 90
@@ -390,7 +392,7 @@ while True:
             else:
                 # move forward
                 motor_on(60, 60)
-                time.sleep(0.1)
+                time.sleep(5)
                 motor_off()
 
         state = DONE

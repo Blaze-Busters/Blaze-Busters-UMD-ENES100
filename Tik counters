@@ -4,3 +4,14 @@ motors_spin(0.3, 70, 70,
             kick_left_strength=90,
             kick_right_strength=100)
 
+#turn right 90 degrees
+motors_spin(.48, 70, 70,
+            kick_time=0.1,
+            kick_left_strength=90,
+            kick_right_strength=100)
+
+#turn left 90 degrees
+motors_spin(.6.5, -70, -70,
+            kick_time=0.1,
+            kick_left_strength=90,
+            kick_right_strength=100)

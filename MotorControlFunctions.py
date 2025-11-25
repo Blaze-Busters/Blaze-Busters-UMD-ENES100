@@ -157,13 +157,20 @@ def motor_off():
 
 # ----- TEST -----
 #FIRST FUNCTION
-motors_spin(5, 80, 80,
+motors_spin(0.3, 35, 35,
             kick_time=0.1,
             kick_left_strength=90,
             kick_right_strength=100)
 #SECOND FUNCTION
+'''
 motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
 motor_off()
-
-
+'''
+ '''
+Directions
+motors_spin(-,+) #straight
+motors_spin(+,-) #Back 
+motors_spin(+,+) #right
+motors_spin(-,-) #left
+'''
 

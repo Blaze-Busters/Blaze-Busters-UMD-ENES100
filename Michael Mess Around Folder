@@ -1,16 +1,261 @@
-while ultrasound_front > 20:
+from machine import Pin, PWM, time_pulse_us
+import time
+
+# -----Pin map-----
+# Left motor
+IN1 = Pin(18, Pin.OUT)
+IN2 = Pin(19, Pin.OUT)
+ENA = PWM(Pin(22))
+
+# Right motor
+IN3 = Pin(21, Pin.OUT)
+IN4 = Pin(4,  Pin.OUT)
+ENB = PWM(Pin(23))
+
+#ultrasound sensor pins
+TRIG1 = Pin(13, Pin.OUT)
+ECHO1 = Pin(32, Pin.IN)
+TRIG2 = Pin(12, Pin.OUT)
+ECHO2 = Pin(33, Pin.IN)
+
+
+# Set PWM frequency
+for en in (ENA, ENB):
+    en.freq(1000)
+
+# Make everything safe
+for p in (IN1, IN2, IN3, IN4):
+    p.value(0)
+
+# ----- PWM helper -----
+def _set_pwm(pwm, frac):
+    if frac < 0:  frac = 0.0
+    if frac > 1:  frac = 1.0
+    try:
+        pwm.duty_u16(int(frac * 65535))
+    except AttributeError:
+        pwm.duty(int(frac * 1023))
+
+
+# ----- DC Motor class -----
+class DCMotor:
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
+                 brake_stop=False, invert=False, gain=1.0):
+        self.in_a = in_a
+        self.in_b = in_b
+        self.en   = en_pwm
+        self.brake = brake_stop
+        self.inv   = invert
+        self.gain  = gain
+        self.stop()
+
+    def _dir(self, forward=True):
+        fwd = forward ^ self.inv
+        if fwd:
+            self.in_a.value(1); self.in_b.value(0)
+        else:
+            self.in_a.value(0); self.in_b.value(1)
+
+    def prepare_start(self, speed):
+        """Set direction and return final speed with gain applied."""
+        if speed is None:
+            speed = 0
+
+        speed *= self.gain
+        speed = max(min(speed, 100), -100)
+
+        if speed == 0:
+            return 0
+
+        self._dir(forward=(speed > 0))
+        return speed
+
+    def apply_pwm(self, speed):
+        """Apply steady-state (non-kick) speed."""
+        if speed == 0:
+            self.stop()
+            return
+
+        _set_pwm(self.en, abs(speed) / 100.0)
+
+    def stop(self):
+        if self.brake:
+            self.in_a.value(1); self.in_b.value(1)
+        else:
+            self.in_a.value(0); self.in_b.value(0)
+        _set_pwm(self.en, 0.0)
+
+
+# ----- CREATE MOTORS -----
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
+
+
+# ----- motors_spin with INDEPENDENT KICK STRENGTH -----
+def motors_spin(duration, speed_left, speed_right,
+                kick_time=0.1,
+                kick_left_strength=100,   # 0–100
+                kick_right_strength=100): # 0–100
+    """
+    kick_left_strength / kick_right_strength: percent power during kick
+    """
+
+    # Prepare (set direction)
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    if sL == 0 and sR == 0:
+        time.sleep(duration)
+        return
+
+    # Convert strength % → duty fraction (0–1)
+    kL = max(0, min(kick_left_strength, 100)) / 100.0
+    kR = max(0, min(kick_right_strength, 100)) / 100.0
+
+    # Kick both motors using their individual strengths
+    if sL != 0: _set_pwm(ENA, kL)
+    if sR != 0: _set_pwm(ENB, kR)
+
+    time.sleep(kick_time)
+
+    # Steady PWM
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
+    time.sleep(duration)
+
+    # Stop at the end
+    motor_left.stop()
+    motor_right.stop()
+    
+
+# ----- Continuous motor control (ON/OFF) -----
+
+# Track whether motors are currently running
+motor_running = False
+
+def motor_on(speed_left, speed_right,
+             kick_time=0.1,
+             kick_left_strength=100,
+             kick_right_strength=100):
+
+    global motor_running
+
+    # Prepare direction
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    # If both speeds are zero → just stop
+    if sL == 0 and sR == 0:
+        motor_left.apply_pwm(0)
+        motor_right.apply_pwm(0)
+        motor_running = False
+        return
+
+    # Kick only if motors were previously stopped
+    starting_from_stop = not motor_running
+
+    if starting_from_stop:
+        kL = max(0, min(kick_left_strength, 100)) / 100.0
+        kR = max(0, min(kick_right_strength, 100)) / 100.0
+
+        if sL != 0: _set_pwm(ENA, kL)
+        if sR != 0: _set_pwm(ENB, kR)
+
+        time.sleep(kick_time)
+
+    # Apply steady state PWM
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
+    # Mark as running
+    motor_running = True
+
+
+def motor_off():
+    global motor_running
+    motor_left.stop()
+    motor_right.stop()
+    motor_running = False   # ← reset kick logic
+
+'''
+# ----- TEST -----
+#FIRST FUNCTION
+motors_spin(5, 35, 35,
+            kick_time=0.1,
+            kick_left_strength=90,
+            kick_right_strength=100)
+#SECOND FUNCTION
+
+motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
+motor_off()
+
+
+Directions
+motors_spin(-,+) #straight
+motors_spin(+,-) #Back 
+motors_spin(+,+) #right
+motors_spin(-,-) #left
+'''
+def spin(duration, speed):
+    STOP_DUTY = 77
+    MAX_RANGE = 25
+    # speed clamp
+    speed = max(-100, min(100, speed))
+    # convert speed (-100..100) → duty (~52..102)
+    duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
+    servo.duty(duty)
+    time.sleep(duration)
+    # stop servo
+    servo.duty(STOP_DUTY)
+    
+def distance_cm(trig, echo):
+    trig.value(0)
+    time.sleep_us(2)
+    trig.value(1)
+    time.sleep_us(10)
+    trig.value(0)
+
+    duration = time_pulse_us(echo, 1, 30000)  # wait for echo HIGH max 30ms
+    if duration <= 0:
+        return 999  # no echo detected
+    dist_cm = (duration / 2) * 0.0343
+    return dist_cm
+
+# sensor readings (globals updated by function calls)
+front_sensor = 100
+left_sensor_side = 0
+right_sensor_side = 0
+left_sensor_down = 0
+right_sensor_down = 0
+def update_sensors():
+    """Update only the front ultrasonic sensor."""
+    global front_sensor
+    front_sensor = distance_cm(TRIG1, ECHO1)
+
+# read your ultrasonic sensors
+ultrasound_front = front_sensor
+# Move straight until obstacle within 10 cm
+
+while ultrasound_front >=40:
     print(ultrasound_front)
     update_sensors()
-    motor_on(60, 60)
+    motor_on(-20, 24)
     time.sleep(0.05)
     ultrasound_front = front_sensor
 motor_off()
 
+
 # Obstacle detected
-if ultrasound_front < 10:
-    motors_spin(.48, 70, 70,kick_time=0.1,kick_left_strength=90,kick_right_strength=100)
-    motor_on(40,40)
+if ultrasound_front < 40:
+    time.sleep(2)
+    motors_spin(.48, -70, -70,kick_time=0.1,kick_left_strength=90,kick_right_strength=100) #turn right
+    time.sleep(1.5)
+    motor_on(-20,24)
     time.sleep(1.5)
     motor_off()
-#turn left 90 degrees
-motors_spin(.65, -70, -70, kick_time=0.1, kick_left_strength=90,kick_right_strength=100)
+    time.sleep(1.5)
+    motors_spin(.65, 70, 70, kick_time=0.1, kick_left_strength=90,kick_right_strength=100)
+    time.sleep(1.5)
+
+

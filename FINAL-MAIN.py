@@ -2,6 +2,7 @@ from machine import Pin, time_pulse_us, ADC, PWM
 from time import sleep_us, sleep
 from enes100 import enes100
 import time
+from math import pi
 
 # ----------------- ULTRASONIC SENSOR PINS -----------------
 TRIG1 = Pin(13, Pin.OUT)

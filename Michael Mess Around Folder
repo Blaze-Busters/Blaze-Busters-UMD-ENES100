@@ -1,1 +1,32 @@
+from math import pi
+import time
+
+def turn_90_right(speed=50):
+
+    update_position()
+    start_angle = theta
+
+    # target angle = start - 90° (turn right)
+    target = start_angle - (pi / 2)
+
+    # simple wrap handling so comparison works *chatgpt said so :(
+    if target < -pi:
+        target += 2*pi
+
+    while True:
+        update_position()
+
+        # check if we reached or passed target
+        if start_angle >= target:
+            if theta <= target:
+                break
+        else:
+            # if wrap-around happened *gpt added
+            if theta <= target or theta > start_angle:
+                break
+
+        motor_on(50, 50)
+        time.sleep(0.02)
+
+    motor_off()
 

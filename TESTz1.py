@@ -54,11 +54,11 @@ def distance_cm(trig, echo):
 def update_sensors():
     global front_sensor, left_sensor_side, right_sensor_side, left_sensor_down, right_sensor_down
     while True:
-        front_sensor = distance_cm(TRIG5, ECHO5)
-        left_sensor_side = distance_cm(TRIG1, ECHO1)
-        right_sensor_side = distance_cm(TRIG2, ECHO2)
-        left_sensor_down = distance_cm(TRIG3, ECHO3)
-        right_sensor_down = distance_cm(TRIG4, ECHO4)
+        front_sensor = distance_cm(TRIG1, ECHO1)
+        left_sensor_side = distance_cm(TRIG2, ECHO2)
+        right_sensor_side = distance_cm(TRIG3, ECHO3)
+        left_sensor_down = distance_cm(TRIG4, ECHO4)
+        right_sensor_down = distance_cm(TRIG5, ECHO5)
         time.sleep(0.1)   # Update at 10Hz
         
 _thread.start_new_thread(update_sensors, ())

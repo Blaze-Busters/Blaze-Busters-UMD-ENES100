@@ -29,12 +29,12 @@ def update_position():
         y = enes100.y()
         theta = enes100.theta()
 
-# start background pose updater
-_thread.start_new_thread(update_position, ())
 
+update_position()
 while not (1.541 < theta < 1.599):
   # spin OTV to face correct direction
   motors_spin(0.1, -0.3, 0.3)
+  update_position():
   pass
 
 motors_spin(7, 0.3, 0.3)

@@ -288,6 +288,7 @@ Z3_MAX = 3.7
 IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
 state = IDLE
 
+'''
 while True:
     time.sleep_ms(10)  # small loop delay
     update_position()
@@ -434,3 +435,4 @@ while True:
         victory_dance()
         while True:
             time.sleep(1)  # WHAT ARE U GONNA GET? 100!
+'''

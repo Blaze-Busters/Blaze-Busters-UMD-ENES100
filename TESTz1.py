@@ -100,14 +100,6 @@ def Snuffs(duration, speed):
     # Stop servo
     servo.duty(STOP_DUTY)
 
-def classify_position(left_distance, right_distance):
-    # left sesnor is sesnor #4
-    # right sesnor is sensor #5
-    # ranges for each option
-    option_A = (9.4 <= left_distance <= 9.7) and (6.7 <= right_distance <= 7.3)
-    option_B = (11.8 <= left_distance <= 12.3) and (9.4 <= right_distance <= 9.6)
-    option_C = (9.4 <= left_distance <= 9.7) and (9.4 <= right_distance <= 9.7)
-    option_D = (6.7 <= left_distance <= 7.3) and (11.8 <= right_distance <= 12.3)
 
     # Check which option matches
     if option_A:
@@ -125,6 +117,8 @@ def classify_position(left_distance, right_distance):
     else:
         return "Unknown — values do not match any option." #gulp
 
+motor_left = DCMotor(IN1, IN2, ENA)
+motor_right = DCMotor(IN3, IN4, ENB)
 
 
 class DCMotor:

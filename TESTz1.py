@@ -208,7 +208,7 @@ update_pose()
 #print orientation
 print(classify_position(left_sensor_down, right_sensor_down))
 #Print total number of flames lit, (includes middle flame)
-print("Total number of Flames Lit "+ number_of_flames_lit(FS1, FS2, FS3, FS4))
+print("Total number of Flames Lit ", number_of_flames_lit(FS1, FS2, FS3, FS4))
 
 
 

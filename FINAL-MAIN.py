@@ -236,6 +236,7 @@ CALL FUNCTION:
 numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
+enes100.print(f"Candles Lit: {fire_emoji}")
 '''
 
 # ----------------- ORIENTATION FUNCTION -----------------

@@ -34,8 +34,9 @@ def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
     return total_flames
 
 # Call function example
-numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4)
-print("Total Number of Candles Lit: " + numberLit)
+while True:
+    numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4)
+    print("Total Number of Candles Lit: " + numberLit)
 
 #Snuffs(5, 50)
 #time.sleep(5)

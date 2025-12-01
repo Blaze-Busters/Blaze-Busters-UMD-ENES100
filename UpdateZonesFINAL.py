@@ -163,6 +163,8 @@ def update_sensors():
         right_sensor_down = distance_cm(TRIG4, ECHO4)
 
         time.sleep(0.1)   # Update at 10Hz
+        
+_thread.start_new_thread(update_sensors, ())
 
 
 # ==== STATE MACHINE DEFINITIONS ====

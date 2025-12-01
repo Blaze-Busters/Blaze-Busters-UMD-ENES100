@@ -3,16 +3,76 @@ import _thread
 from time import sleep_us, sleep
 from enes100 import enes100
 from machine import Pin, time_pulse_us, ADC, PWM
-from NusCmandles import number_of_flames_lit
 from MotorControlFunctions import DCMotor, motor_left, motor_right, motors_spin
 #motors_spin(duration, speed_left, speed_right) main function used
-from Orientation import classify_position
 
 # ==== CONSTANTS ====
 UPDATE_MS = 1000  # 1 second update rate
 Z1_MAX = 0.80
 Z2_MAX = 2.80
 Z3_MAX = 3.80
+
+#NUM CANDLES LIT FUNCTION
+def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
+
+    # list of all sensors
+    sensors = [left_flame, right_flame, front_flame, back_flame]
+
+    # count how many sensors detect fire (value == 0)
+    fire_count = sum(1 for sensor in sensors if sensor.value() == 0)
+
+    # total flames lit
+    total_flames = 1 + fire_count
+
+    return total_flames
+
+#BLOCK ORIENTATION FUNCTION
+def classify_position(left_distance, right_distance):
+    # left sesnor is sesnor #4
+    # right sesnor is sensor #5
+    # ranges for each option
+    option_A = (9.4 <= left_distance <= 9.7) and (6.7 <= right_distance <= 7.3)
+    option_B = (11.8 <= left_distance <= 12.3) and (9.4 <= right_distance <= 9.6)
+    option_C = (9.4 <= left_distance <= 9.7) and (9.4 <= right_distance <= 9.7)
+    option_D = (6.7 <= left_distance <= 7.3) and (11.8 <= right_distance <= 12.3)
+
+    # Check which option matches
+    if option_A:
+        return "Option A"
+        # OTV  is facing side A
+    elif option_B:
+        return "Option B"
+        # OTV  is facing side B 
+    elif option_C:
+        return "Option C"
+        # OTV  is facing side C
+    elif option_D:
+        return "Option D"
+        # OTV  is facing unlabeld side 
+    else:
+        return "Unknown — values do not match any option." #gulp
+
+
+#SERVO PIN
+servo = PWM(Pin(16), freq=50)
+
+#SERVO FUNCTION (DROP AND LIFT SNUFFS)
+def Snuffs(duration, speed):
+    STOP_DUTY = 77
+    MAX_RANGE = 25
+
+    #speed
+    speed = max(-100, min(100, speed))
+
+    #convert speed (-100..100) → duty (52..102)
+    duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
+    servo.duty(duty)
+
+    #spin for desired duration
+    time.sleep(duration)
+
+    # Stop servo
+    servo.duty(STOP_DUTY)
 
 #ULTRASONIC SENSOR PINS
 TRIG1 = Pin(13, Pin.OUT)

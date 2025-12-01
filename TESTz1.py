@@ -4,18 +4,6 @@ import _thread
 from enes100 import enes100
 from machine import Pin, time_pulse_us, ADC, PWM
 
-#ULTRASONIC SENSOR PINS
-TRIG1 = Pin(13, Pin.OUT)
-ECHO1 = Pin(32, Pin.IN)
-TRIG2 = Pin(12, Pin.OUT)
-ECHO2 = Pin(33, Pin.IN)
-TRIG3 = Pin(14, Pin.OUT)
-ECHO3 = Pin(34, Pin.IN)
-TRIG4 = Pin(27, Pin.OUT)
-ECHO4 = Pin(35, Pin.IN)
-TRIG5 = Pin(5, Pin.OUT)
-ECHO5 = Pin(36, Pin.IN)
-
 #FLAME SENSOR PINS
 FS1 = Pin(17, Pin.IN)
 FS2 = Pin(25, Pin.IN)

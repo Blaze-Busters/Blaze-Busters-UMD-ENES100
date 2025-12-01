@@ -59,10 +59,10 @@ def update_sensors():
         right_sensor_side = distance_cm(TRIG2, ECHO2)
         left_sensor_down = distance_cm(TRIG3, ECHO3)
         right_sensor_down = distance_cm(TRIG4, ECHO4)
-
         time.sleep(0.1)   # Update at 10Hz
         
 _thread.start_new_thread(update_sensors, ())
+time.sleep(0.2)
 
 #NUM CANDLES LIT FUNCTION
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
@@ -146,7 +146,7 @@ class DCMotor:
         self.in_b.value(0)
         self._set_speed(0)
 
-def move_spin(duration, speed_left, speed_right):
+def motors_spin(duration, speed_left, speed_right):
     """
     speed_left: 0.0 to 1.0
     speed_right: 0.0 to 1.0
@@ -174,7 +174,7 @@ def update_pose():
     theta = enes100.theta()
 
 #START
-update_position()
+update_pose()
 
 if y < 1.3:
     # face +pi/2 (1.541 to 1.599 rad)
@@ -192,7 +192,7 @@ else:
         pass
 
  #loop, go till reach sensor hits mission block
-while(front_sensor<5)
+whilefront_sensor<5:
     motors_spin(3, 50, 50)
     update_pose()
     pass

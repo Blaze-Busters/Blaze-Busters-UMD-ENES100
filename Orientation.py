@@ -52,8 +52,8 @@ _thread.start_new_thread(update_sensors, ())
 time.sleep(0.2)
 
 
-
-print("left distance:", left_sensor_down)
-print("right distance:", right_sensor_down)
+while true:
+    print("left distance:", left_sensor_down)
+    print("right distance:", right_sensor_down)
 
 print(classify_position(left_sensor_down, right_sensor_down))

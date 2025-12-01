@@ -1,6 +1,12 @@
 from machine import Pin, PWM
 import time
 
+#FLAME SENSOR PINS
+FS1 = Pin(17, Pin.IN)
+FS2 = Pin(25, Pin.IN)
+FS3 = Pin(26, Pin.IN)
+FS4 = Pin(39, Pin.IN)
+
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame):
 
     # list of all sensors

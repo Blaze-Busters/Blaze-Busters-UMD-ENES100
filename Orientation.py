@@ -23,3 +23,37 @@ def classify_position(left_distance, right_distance):
     else:
         return "Unknown — values do not match any option." #gulp
 
+
+left_sensor_down = 0
+right_sensor_down = 0
+
+TRIG3 = Pin(14, Pin.OUT)
+ECHO3 = Pin(34, Pin.IN)
+TRIG4 = Pin(27, Pin.OUT)
+ECHO4 = Pin(35, Pin.IN)
+
+def distance_cm(trig, echo):
+    trig.value(0)
+    sleep_us(2)
+    trig.value(1)
+    sleep_us(10)
+    trig.value(0)
+    duration = time_pulse_us(echo, 1, 30000)
+    dist_cm = (duration / 2) * 0.0343
+    return dist_cm
+
+def update_sensors():
+    global left_sensor_down, right_sensor_down
+    while True:
+        left_sensor_down = distance_cm(TRIG3, ECHO3)
+        right_sensor_down = distance_cm(TRIG4, ECHO4)
+
+        time.sleep(0.1)   # Update at 10Hz
+        
+_thread.start_new_thread(update_sensors, ())
+
+print("left distance: " + left_sensor_down)
+print("right distance: " + right_sensor_down)
+
+print(classify_position(left_sensor_down, right_sensor_down))
+

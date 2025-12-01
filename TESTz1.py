@@ -192,7 +192,7 @@ else:
         pass
 
  #loop, go till reach sensor hits mission block
-whilefront_sensor<5:
+whilefront_sensor<10:
     motors_spin(3, 50, 50)
     update_pose()
     pass

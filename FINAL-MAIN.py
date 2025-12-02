@@ -36,10 +36,12 @@ servo = PWM(Pin(16), freq=50)
 # ----------------- START BUTTON -----------------
 button_start = Pin(15, Pin.IN, Pin.PULL_UP)  # adjust pin if needed
 # ----------------- WAIT UNTIL CONNECTED -----------------
+'''
 enes100.begin(BlazeBusters,FIRE,67,1120)
 while not enes100.is_connected():
     time.sleep(0.1)  # small delay to avoid busy-looping
 print("Connected!")
+'''
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
     STOP_DUTY = 77

@@ -21,6 +21,7 @@ print(classify_position(left_sensor_down, right_sensor_down))
 
 #back outs and turns
 motors_spin(5,50,100)
+time.sleep(0.2)
 motors_spin(2.3,-50,100)
 
 
@@ -48,4 +49,5 @@ motor_off()
 motors_spin(2.7, -60, 60)
 motor_off()
 time.sleep(0.1)
+
 

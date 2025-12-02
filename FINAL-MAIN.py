@@ -77,9 +77,9 @@ def distance_cm(trig, echo):
     return dist_cm
 
 # sensor readings (globals updated by function calls)
-front_sensor = 0
-left_sensor_side = 0
-right_sensor_side = 0
+front_sensor = 50
+left_sensor_side = 50
+right_sensor_side = 50
 left_sensor_down = 0
 right_sensor_down = 0
 

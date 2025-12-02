@@ -243,10 +243,6 @@ enes100.print(f"Candles Lit: {fire_emoji}")
 '''
 
 # ----------------- ORIENTATION FUNCTION -----------------
-import _thread
-import time
-from machine import Pin, time_pulse_us
-
 # ===== Sensors =====
 left_sensor_down = 0
 right_sensor_down = 0
@@ -267,10 +263,10 @@ def distance_cm(trig, echo):
     return dist_cm
 
 def classify_position(left_distance, right_distance):
-    option_A = (9.4 <= left_distance <= 9.7) and (6.7 <= right_distance <= 7.3)
-    option_B = (11.8 <= left_distance <= 12.3) and (9.4 <= right_distance <= 9.6)
-    option_C = (9.4 <= left_distance <= 9.7) and (9.4 <= right_distance <= 9.7)
-    option_D = (6.7 <= left_distance <= 7.3) and (11.8 <= right_distance <= 12.3)
+    option_A = (3.5 <= left_distance <= 5.5) and (8 <= right_distance <= 12)
+    option_B = (2.7 <= left_distance <= 5.2) and (4 <= right_distance <= 6.3)
+    option_C = (4.3 <= left_distance <= 7) and (3.7 <= right_distance <= 4.9)
+    option_D = (7 <= left_distance <= 30) and (2 <= right_distance <= 4)
 
     if option_A:
         return "Option A"
@@ -296,13 +292,14 @@ _thread.start_new_thread(update_sensors, ())
 # give thread time to update values
 time.sleep(0.2)
 
-
+'''
+HOW TO RUN ORIENTATION
 while True:
     print("left distance:", left_sensor_down)
     print("right distance:", right_sensor_down)
+    print(classify_position(left_sensor_down, right_sensor_down))
     time.sleep(0.5)
-
-#print(classify_position(left_sensor_down, right_sensor_down))
+'''
 
 # ----------------- VICTORY DANCE -----------------
 def victory_dance():

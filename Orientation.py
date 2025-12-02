@@ -17,7 +17,6 @@ def distance_cm(trig, echo):
     trig.value(1)
     time.sleep_us(10)
     trig.value(0)
-
     duration = time_pulse_us(echo, 1, 30000)
     dist_cm = (duration / 2) * 0.0343
     return dist_cm
@@ -46,16 +45,16 @@ def update_sensors():
         right_sensor_down = distance_cm(TRIG5, ECHO5)
         time.sleep(0.1)
 
-# Start background thread
+# start thread
 _thread.start_new_thread(update_sensors, ())
 
-# Allow thread to initialize
+# give thread time to update values
 time.sleep(0.2)
 
-# Main loop
+
 while True:
-    print("Left distance:", left_sensor_down)
-    print("Right distance:", right_sensor_down)
-    #print("Position:", classify_position(left_sensor_down, right_sensor_down))
-    print("-----")
-    time.sleep(0.3)
+    print("left distance:", left_sensor_down)
+    print("right distance:", right_sensor_down)
+    time.sleep(0.5)
+
+#print(classify_position(left_sensor_down, right_sensor_down))

@@ -44,16 +44,17 @@ print("Connected!")
 '''
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
-    STOP_DUTY = 77
-    MAX_RANGE = 25
-    # speed clamp
-    speed = max(-100, min(100, speed))
-    # convert speed (-100..100) → duty (~52..102)
-    duty = int(STOP_DUTY + (speed / 100) * MAX_RANGE)
-    servo.duty(duty)
+     # Map speed to duty range
+    min_us = 1000
+    max_us = 2000
+    center_us = 1500
+    pulse = center_us + speed * 500
+    duty = int((pulse / 20000) * 65535)  # 20 ms period (50Hz)
+    servo.duty_u16(duty)
     time.sleep(duration)
-    # stop servo
-    servo.duty(STOP_DUTY)
+    pulse = center_us + 0 * 500
+    duty = int((pulse / 20000) * 65535)  # 20 ms period (50Hz)
+    servo.duty_u16(duty)
 
 '''
 GUIDE: SERVO

@@ -34,35 +34,20 @@ IN4 = Pin(4, Pin.OUT)
 servo = PWM(Pin(16), freq=50)
 
 # ----------------- START BUTTON -----------------
-button_start = Pin(15, Pin.IN, Pin.PULL_UP)  # adjust pin if needed
-# ----------------- WAIT UNTIL CONNECTED -----------------
-'''
-enes100.begin(BlazeBusters,FIRE,67,1120)
-while not enes100.is_connected():
-    time.sleep(0.1)  # small delay to avoid busy-looping
-print("Connected!")
-'''
+button_start = Pin(15, Pin.IN, Pin.PULL_UP)
+
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
-     # Map speed to duty range
     min_us = 1000
     max_us = 2000
     center_us = 1500
     pulse = center_us + speed * 500
-    duty = int((pulse / 20000) * 65535)  # 20 ms period (50Hz)
+    duty = int((pulse / 20000) * 65535)
     servo.duty_u16(duty)
     time.sleep(duration)
-    pulse = center_us + 0 * 500
-    duty = int((pulse / 20000) * 65535)  # 20 ms period (50Hz)
-    servo.duty_u16(duty)
+    servo.duty_u16(int(center_us / 20000 * 65535))
 
-'''
-GUIDE: SERVO
-spin(2,50)   # spin forward
-spin(5,-100) # spin backward
-'''
-
-# ----------------- ULTRASOUND -----------------
+# ----------------- ULTRASOUND (CLEAN VERSION) -----------------
 def distance_cm(trig, echo):
     trig.value(0)
     time.sleep_us(2)
@@ -70,13 +55,13 @@ def distance_cm(trig, echo):
     time.sleep_us(10)
     trig.value(0)
 
-    duration = time_pulse_us(echo, 1, 30000)  # wait for echo HIGH max 30ms
+    duration = time_pulse_us(echo, 1, 30000)
     if duration <= 0:
-        return 999  # no echo detected
-    dist_cm = (duration / 2) * 0.0343
-    return dist_cm
+        return 999  # No echo detected
 
-# sensor readings (globals updated by function calls)
+    return (duration / 2) * 0.0343
+
+# sensor readings (globals)
 front_sensor = 50
 left_sensor_side = 50
 right_sensor_side = 50
@@ -84,36 +69,29 @@ left_sensor_down = 0
 right_sensor_down = 0
 
 def update_sensors():
-    """Single update of ultrasonic sensor globals (no threading)."""
     global front_sensor, left_sensor_side, right_sensor_side, left_sensor_down, right_sensor_down
     front_sensor = distance_cm(TRIG1, ECHO1)
     left_sensor_side = distance_cm(TRIG2, ECHO2)
     right_sensor_side = distance_cm(TRIG3, ECHO3)
     left_sensor_down = distance_cm(TRIG4, ECHO4)
     right_sensor_down = distance_cm(TRIG5, ECHO5)
+
 # ----------------- MOTOR HELPERS -----------------
-# Set PWM frequency
 for en in (ENA, ENB):
     en.freq(1000)
 
-# Make everything safe
 for p in (IN1, IN2, IN3, IN4):
     p.value(0)
 
-# ----- PWM helper -----
 def _set_pwm(pwm, frac):
-    if frac < 0:  frac = 0.0
-    if frac > 1:  frac = 1.0
+    frac = max(0.0, min(1.0, frac))
     try:
         pwm.duty_u16(int(frac * 65535))
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
-
-# ----- DC Motor class -----
 class DCMotor:
-    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
-                 brake_stop=False, invert=False, gain=1.0):
+    def __init__(self, in_a, in_b, en_pwm, brake_stop=False, invert=False, gain=1.0):
         self.in_a = in_a
         self.in_b = in_b
         self.en   = en_pwm
@@ -130,50 +108,36 @@ class DCMotor:
             self.in_a.value(0); self.in_b.value(1)
 
     def prepare_start(self, speed):
-        """Set direction and return final speed with gain applied."""
         if speed is None:
             speed = 0
-
         speed *= self.gain
         speed = max(min(speed, 100), -100)
-
         if speed == 0:
             return 0
-
-        self._dir(forward=(speed > 0))
+        self._dir(speed > 0)
         return speed
 
     def apply_pwm(self, speed):
-        """Apply steady-state (non-kick) speed."""
         if speed == 0:
             self.stop()
             return
-
-        _set_pwm(self.en, abs(speed) / 100.0)
+        _set_pwm(self.en, abs(speed) / 100)
 
     def stop(self):
         if self.brake:
             self.in_a.value(1); self.in_b.value(1)
         else:
             self.in_a.value(0); self.in_b.value(0)
-        _set_pwm(self.en, 0.0)
+        _set_pwm(self.en, 0)
 
+motor_left  = DCMotor(IN1, IN2, ENA)
+motor_right = DCMotor(IN3, IN4, ENB)
 
-# ----- CREATE MOTORS -----
-motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
-motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
-
-
-# ----- motors_spin with INDEPENDENT KICK STRENGTH -----
 def motors_spin(duration, speed_left, speed_right,
                 kick_time=0.1,
-                kick_left_strength=100,   # 0–100
-                kick_right_strength=100): # 0–100
-    """
-    kick_left_strength / kick_right_strength: percent power during kick
-    """
+                kick_left_strength=100,
+                kick_right_strength=100):
 
-    # Prepare (set direction)
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
@@ -181,91 +145,44 @@ def motors_spin(duration, speed_left, speed_right,
         time.sleep(duration)
         return
 
-    # Convert strength % → duty fraction (0–1)
-    kL = max(0, min(kick_left_strength, 100)) / 100.0
-    kR = max(0, min(kick_right_strength, 100)) / 100.0
+    kL = max(0, min(kick_left_strength, 100)) / 100
+    kR = max(0, min(kick_right_strength, 100)) / 100
 
-    # Kick both motors using their individual strengths
     if sL != 0: _set_pwm(ENA, kL)
     if sR != 0: _set_pwm(ENB, kR)
-
     time.sleep(kick_time)
 
-    # Steady PWM
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
-
     time.sleep(duration)
 
-    # Stop at the end
     motor_left.stop()
     motor_right.stop()
-    
-
-# ----- Continuous motor control (ON/OFF) -----
 
 def motor_on(speed_left, speed_right,
              kick_time=0.1,
              kick_left_strength=100,
              kick_right_strength=100):
 
-    # Prepare direction
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
     if sL == 0 and sR == 0:
         return
 
-    # Convert strength % → duty fraction
-    kL = max(0, min(kick_left_strength, 100)) / 100.0
-    kR = max(0, min(kick_right_strength, 100)) / 100.0
+    kL = max(0, min(kick_left_strength, 100)) / 100
+    kR = max(0, min(kick_right_strength, 100)) / 100
 
-    # Kick phase
     if sL != 0: _set_pwm(ENA, kL)
     if sR != 0: _set_pwm(ENB, kR)
     time.sleep(kick_time)
 
-    # Hold steady speed
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
-
 
 def motor_off():
     motor_left.stop()
     motor_right.stop()
-
-
-# ----- TEST -----
-#FIRST FUNCTION
-motors_spin(0.3, 35, 35,
-            kick_time=0.1,
-            kick_left_strength=90,
-            kick_right_strength=100)
-#SECOND FUNCTION
-'''
-motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
-motor_off()
-'''
- '''
-Directions
-motors_spin(-,+) #straight
-motors_spin(+,-) #Back 
-motors_spin(+,+) #right
-motors_spin(-,-) #left
-'''
-
-
-'''
-GUIDE MOTOR FUNCTIONS
-#FIRST FUNCTION
-motors_spin(5, 80, 80,
-            kick_time=0.1,
-            kick_left_strength=90,
-            kick_right_strength=100)
-#SECOND FUNCTION
-motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
-motor_off()
-'''
 
 # ----------------- CANDLE CHECK FUNCTION -----------------
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,
@@ -285,65 +202,20 @@ def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,
 
     expected = 0 if active_low else 1
     fire_count = sum(read_value(s) == expected for s in sensors)
-    total_flames = fire_count + 1
-    return total_flames
+    return fire_count + 1
 
-'''
-CALL FUNCTION:
-numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
-fire_emoji = "🔥" * numberLit
-print(f"Candles Lit: {fire_emoji}")
-enes100.print(f"Candles Lit: {fire_emoji}")
-'''
-
-# ----------------- ORIENTATION FUNCTION -----------------
-# ===== Sensors =====
-left_sensor_down = 0
-right_sensor_down = 0
-
-TRIG5 = Pin(5, Pin.OUT)
-ECHO5 = Pin(36, Pin.IN)
-TRIG4 = Pin(27, Pin.OUT)
-ECHO4 = Pin(35, Pin.IN)
-
-def distance_cm(trig, echo):
-    trig.value(0)
-    time.sleep_us(2)
-    trig.value(1)
-    time.sleep_us(10)
-    trig.value(0)
-    duration = time_pulse_us(echo, 1, 30000)
-    dist_cm = (duration / 2) * 0.0343
-    return dist_cm
-
+# ----------------- ORIENTATION (CLEAN VERSION, NO DUPLICATES) -----------------
 def classify_position(left_distance, right_distance):
     option_A = (3.5 <= left_distance <= 5.5) and (8 <= right_distance <= 12)
     option_B = (2.7 <= left_distance <= 5.2) and (4 <= right_distance <= 6.3)
     option_C = (4.3 <= left_distance <= 7) and (3.7 <= right_distance <= 4.9)
     option_D = (7 <= left_distance <= 30) and (2 <= right_distance <= 4)
 
-    if option_A:
-        return "Option A"
-    elif option_B:
-        return "Option B"
-    elif option_C:
-        return "Option C"
-    elif option_D:
-        return "Option D"
-    else:
-        return "Unknown — values do not match any option."
-
-# give thread time to update values
-time.sleep(0.2)
-
-'''
-HOW TO RUN ORIENTATION
-while True:
-    print("left distance:", left_sensor_down)
-    print("right distance:", right_sensor_down)
-    print(classify_position(left_sensor_down, right_sensor_down))
-    time.sleep(0.5)
-'''
+    if option_A: return "Option A"
+    if option_B: return "Option B"
+    if option_C: return "Option C"
+    if option_D: return "Option D"
+    return "Unknown — values do not match any option."
 
 # ----------------- VICTORY DANCE -----------------
 def victory_dance():
@@ -352,6 +224,7 @@ def victory_dance():
     motors_spin(0.3, -100, -100)
     motors_spin(0.3, -50, 100)
     motors_spin(0.3, 50, -100)
+
 
 # ----------------- NAVIGATION RUN -----------------
 

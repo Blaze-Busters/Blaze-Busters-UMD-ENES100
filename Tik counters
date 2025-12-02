@@ -16,3 +16,10 @@ A:            RIGHT: 10.032            LEFT: 4.802
 B:            RIGHT: 4.853            LEFT: 3.327
 C:            RIGHT: 4.218            LEFT: 6.568
 D:            RIGHT: 14.9205            LEFT: 3.9102
+
+
+MOTOR
+(-,-) Straight
+(+,+) Back
+(-,+) Right
+(+,-) Left

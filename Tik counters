@@ -10,3 +10,9 @@ motors_spin(.48, 70, 70,kick_time=0.1,kick_left_strength=90,kick_right_strength=
 #turn left 90 degrees
 motors_spin(.65, -70, -70, kick_time=0.1, kick_left_strength=90,kick_right_strength=100)
 
+ORIENTATION:
+
+A:            RIGHT: 10.032            LEFT: 4.802
+B:            RIGHT: 4.853            LEFT: 3.327
+C:            RIGHT: 4.218            LEFT: 6.568
+D:            RIGHT: 14.9205            LEFT: 3.9102

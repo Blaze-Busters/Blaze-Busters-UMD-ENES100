@@ -333,16 +333,6 @@ def classify_position(left_distance, right_distance):
     else:
         return "Unknown — values do not match any option."
 
-def update_sensors():
-    global left_sensor_down, right_sensor_down
-    while True:
-        left_sensor_down = distance_cm(TRIG4, ECHO4)
-        right_sensor_down = distance_cm(TRIG5, ECHO5)
-        time.sleep(0.1)
-
-# start thread
-_thread.start_new_thread(update_sensors, ())
-
 # give thread time to update values
 time.sleep(0.2)
 

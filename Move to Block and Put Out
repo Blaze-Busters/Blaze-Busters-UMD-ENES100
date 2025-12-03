@@ -17,13 +17,13 @@ time.sleep(1)
 spin(2, -50)
 time.sleep(2)
 spin(2,50)
-time.sleep(2)
+time.sleep(0.1)
 
 #checks orientation
 print(classify_position(left_sensor_down, right_sensor_down))
-time.sleep(2)
+time.sleep(0.4)
 
 #back outs and turns
 motors_spin(5,50,100)
 time.sleep(0.2)
-motors_spin(2.6,-50,100)
+motors_spin(2.4,-50,100)

@@ -11,6 +11,7 @@ time.sleep(1)
 numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
+enes100.print(f"Candles Lit: {fire_emoji}")
 time.sleep(1)
 
 #puts out candles
@@ -21,6 +22,7 @@ time.sleep(0.1)
 
 #checks orientation
 print(classify_position(left_sensor_down, right_sensor_down))
+enes100.print(classify_position(left_sensor_down, right_sensor_down))
 time.sleep(0.4)
 
 #back outs and turns

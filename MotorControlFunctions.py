@@ -50,7 +50,6 @@ class DCMotor:
             self.in_a.value(0); self.in_b.value(1)
 
     def prepare_start(self, speed):
-        """Set direction and return final speed with gain applied."""
         if speed is None:
             speed = 0
 
@@ -64,11 +63,9 @@ class DCMotor:
         return speed
 
     def apply_pwm(self, speed):
-        """Apply steady-state (non-kick) speed."""
         if speed == 0:
             self.stop()
             return
-
         _set_pwm(self.en, abs(speed) / 100.0)
 
     def stop(self):
@@ -84,16 +81,8 @@ motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
 motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
 
-# ----- motors_spin with INDEPENDENT KICK STRENGTH -----
-def motors_spin(duration, speed_left, speed_right,
-                kick_time=0.1,
-                kick_left_strength=100,   # 0–100
-                kick_right_strength=100): # 0–100
-    """
-    kick_left_strength / kick_right_strength: percent power during kick
-    """
-
-    # Prepare (set direction)
+# ----- motors_spin WITHOUT KICK -----
+def motors_spin(duration, speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
@@ -101,51 +90,24 @@ def motors_spin(duration, speed_left, speed_right,
         time.sleep(duration)
         return
 
-    # Convert strength % → duty fraction (0–1)
-    kL = max(0, min(kick_left_strength, 100)) / 100.0
-    kR = max(0, min(kick_right_strength, 100)) / 100.0
-
-    # Kick both motors using their individual strengths
-    if sL != 0: _set_pwm(ENA, kL)
-    if sR != 0: _set_pwm(ENB, kR)
-
-    time.sleep(kick_time)
-
-    # Steady PWM
+    # Apply steady PWM immediately
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
 
     time.sleep(duration)
 
-    # Stop at the end
     motor_left.stop()
     motor_right.stop()
-    
 
-# ----- Continuous motor control (ON/OFF) -----
 
-def motor_on(speed_left, speed_right,
-             kick_time=0.1,
-             kick_left_strength=100,
-             kick_right_strength=100):
-
-    # Prepare direction
+# ----- Continuous motor control (ON/OFF) WITHOUT KICK -----
+def motor_on(speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
     if sL == 0 and sR == 0:
         return
 
-    # Convert strength % → duty fraction
-    kL = max(0, min(kick_left_strength, 100)) / 100.0
-    kR = max(0, min(kick_right_strength, 100)) / 100.0
-
-    # Kick phase
-    if sL != 0: _set_pwm(ENA, kL)
-    if sR != 0: _set_pwm(ENB, kR)
-    time.sleep(kick_time)
-
-    # Hold steady speed
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
 
@@ -156,21 +118,12 @@ def motor_off():
 
 
 # ----- TEST -----
-#FIRST FUNCTION
-motors_spin(0.3, 35, 35,
-            kick_time=0.1,
-            kick_left_strength=90,
-            kick_right_strength=100)
-#SECOND FUNCTION
-'''
-motor_on(80, 80, kick_left_strength=90, kick_right_strength=100)
-motor_off()
-'''
- '''
-Directions
-motors_spin(-,+) #straight
-motors_spin(+,-) #Back 
-motors_spin(+,+) #right
-motors_spin(-,-) #left
-'''
+motors_spin(0.3, 35, 35)
 
+'''
+Directions:
+ motors_spin(-,+) # straight?
+ motors_spin(+,-) # back
+ motors_spin(+,+) # right
+ motors_spin(-,-) # left
+'''

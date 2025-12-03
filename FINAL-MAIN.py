@@ -146,7 +146,7 @@ motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
 motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
 
-# ----- motors_spin WITHOUT KICK -----
+#-----MOTOR SPIN FUNCTION -----
 def motors_spin(duration, speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
@@ -165,7 +165,7 @@ def motors_spin(duration, speed_left, speed_right):
     motor_right.stop()
 
 
-# ----- Continuous motor control (ON/OFF) WITHOUT KICK -----
+# ----- Continuous motor control -----
 def motor_on(speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
@@ -222,6 +222,7 @@ def classify_position(left_distance, right_distance):
     if option_C: return "Option C"
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
+#print(classify_position(left_distance, right_distance))
 
 # ----------------- VICTORY DANCE -----------------
 def victory_dance():
@@ -230,7 +231,6 @@ def victory_dance():
     motors_spin(0.3, -100, -100)
     motors_spin(0.3, -50, 100)
     motors_spin(0.3, 50, -100)
-
 
 # ----------------- NAVIGATION RUN -----------------
 

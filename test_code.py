@@ -12,9 +12,9 @@ fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 
 #puts out candles
-spin(4, 50)
+spin(2, 50)
 time.sleep(2)
-spin(4,-50)
+spin(2,-50)
 
 #checks orientation
 print(classify_position(left_sensor_down, right_sensor_down))
@@ -49,5 +49,6 @@ motor_off()
 motors_spin(2.7, -60, 60)
 motor_off()
 time.sleep(0.1)
+
 
 

@@ -227,7 +227,7 @@ def classify_position(left_distance, right_distance):
     if option_C: return "Option C"
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
-#print(classify_position(left_distance, right_distance))
+#print(classify_position(left_sensor_down, right_sensor_down))
 
 # ----------------- VICTORY DANCE -----------------
 def victory_dance():

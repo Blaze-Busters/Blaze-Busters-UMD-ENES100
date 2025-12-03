@@ -77,21 +77,28 @@ def update_sensors():
     right_sensor_down = distance_cm(TRIG5, ECHO5)
 
 # ----------------- MOTOR HELPERS -----------------
+# Set PWM frequency
 for en in (ENA, ENB):
     en.freq(1000)
 
+# Make everything safe
 for p in (IN1, IN2, IN3, IN4):
     p.value(0)
 
+# ----- PWM helper -----
 def _set_pwm(pwm, frac):
-    frac = max(0.0, min(1.0, frac))
+    if frac < 0:  frac = 0.0
+    if frac > 1:  frac = 1.0
     try:
         pwm.duty_u16(int(frac * 65535))
     except AttributeError:
         pwm.duty(int(frac * 1023))
 
+
+# ----- DC Motor class -----
 class DCMotor:
-    def __init__(self, in_a, in_b, en_pwm, brake_stop=False, invert=False, gain=1.0):
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
+                 brake_stop=False, invert=False, gain=1.0):
         self.in_a = in_a
         self.in_b = in_b
         self.en   = en_pwm
@@ -110,34 +117,37 @@ class DCMotor:
     def prepare_start(self, speed):
         if speed is None:
             speed = 0
+
         speed *= self.gain
         speed = max(min(speed, 100), -100)
+
         if speed == 0:
             return 0
-        self._dir(speed > 0)
+
+        self._dir(forward=(speed > 0))
         return speed
 
     def apply_pwm(self, speed):
         if speed == 0:
             self.stop()
             return
-        _set_pwm(self.en, abs(speed) / 100)
+        _set_pwm(self.en, abs(speed) / 100.0)
 
     def stop(self):
         if self.brake:
             self.in_a.value(1); self.in_b.value(1)
         else:
             self.in_a.value(0); self.in_b.value(0)
-        _set_pwm(self.en, 0)
+        _set_pwm(self.en, 0.0)
 
-motor_left  = DCMotor(IN1, IN2, ENA)
-motor_right = DCMotor(IN3, IN4, ENB)
 
-def motors_spin(duration, speed_left, speed_right,
-                kick_time=0.1,
-                kick_left_strength=100,
-                kick_right_strength=100):
+# ----- CREATE MOTORS -----
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
 
+
+# ----- motors_spin WITHOUT KICK -----
+def motors_spin(duration, speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
@@ -145,44 +155,40 @@ def motors_spin(duration, speed_left, speed_right,
         time.sleep(duration)
         return
 
-    kL = max(0, min(kick_left_strength, 100)) / 100
-    kR = max(0, min(kick_right_strength, 100)) / 100
-
-    if sL != 0: _set_pwm(ENA, kL)
-    if sR != 0: _set_pwm(ENB, kR)
-    time.sleep(kick_time)
-
+    # Apply steady PWM immediately
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
+
     time.sleep(duration)
 
     motor_left.stop()
     motor_right.stop()
 
-def motor_on(speed_left, speed_right,
-             kick_time=0.1,
-             kick_left_strength=100,
-             kick_right_strength=100):
 
+# ----- Continuous motor control (ON/OFF) WITHOUT KICK -----
+def motor_on(speed_left, speed_right):
     sL = motor_left.prepare_start(speed_left)
     sR = motor_right.prepare_start(speed_right)
 
     if sL == 0 and sR == 0:
         return
 
-    kL = max(0, min(kick_left_strength, 100)) / 100
-    kR = max(0, min(kick_right_strength, 100)) / 100
-
-    if sL != 0: _set_pwm(ENA, kL)
-    if sR != 0: _set_pwm(ENB, kR)
-    time.sleep(kick_time)
-
     motor_left.apply_pwm(sL)
     motor_right.apply_pwm(sR)
+
 
 def motor_off():
     motor_left.stop()
     motor_right.stop()
+
+'''
+Directions:
+ motors_spin(-,+) # straight
+ motors_spin(+,-) # back
+ motors_spin(+,+) # right
+ motors_spin(-,-) # left
+'''
+
 
 # ----------------- CANDLE CHECK FUNCTION -----------------
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,

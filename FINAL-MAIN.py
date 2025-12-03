@@ -209,6 +209,11 @@ def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,
     expected = 0 if active_low else 1
     fire_count = sum(read_value(s) == expected for s in sensors)
     return fire_count + 1
+'''
+numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
+fire_emoji = "🔥" * numberLit
+print(f"Candles Lit: {fire_emoji}")
+'''
 
 # ----------------- ORIENTATION (CLEAN VERSION, NO DUPLICATES) -----------------
 def classify_position(left_distance, right_distance):

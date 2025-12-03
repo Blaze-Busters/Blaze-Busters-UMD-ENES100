@@ -38,14 +38,27 @@ button_start = Pin(15, Pin.IN, Pin.PULL_UP)
 
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
+    # speed expected in range -100 .. 100
+    speed = max(min(speed, 100), -100)   # clamp
+    
     min_us = 1000
     max_us = 2000
     center_us = 1500
-    pulse = center_us + speed * 500
-    duty = int((pulse / 20000) * 65535)
+    period_us = 20000   # 50Hz → 20ms period
+
+    # map speed (-100..100) to pulse (1000..2000)
+    pulse = center_us + (speed / 100) * 500
+    pulse = max(min(pulse, max_us), min_us)
+
+    duty = int((pulse / period_us) * 65535)
     servo.duty_u16(duty)
+
     time.sleep(duration)
-    servo.duty_u16(int(center_us / 20000 * 65535))
+
+    # return to center
+    neutral_duty = int((center_us / period_us) * 65535)
+    servo.duty_u16(neutral_duty)
+
 
 # ----------------- ULTRASOUND (CLEAN VERSION) -----------------
 def distance_cm(trig, echo):

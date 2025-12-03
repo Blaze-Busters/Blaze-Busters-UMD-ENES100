@@ -300,10 +300,7 @@ while True:
                     time.sleep(0.05)
                     motor_off()n
 
-                # move forward a bit
-                motor_on(60, 60)
-                time.sleep(2.5)
-                motor_off()
+
 
             else:
                 # face -pi/2 (roughly straight down)
@@ -313,10 +310,31 @@ while True:
                     time.sleep(0.05)
                     motor_off()
 
-                # move forward a bit
-                motor_on(60, 60)
-                time.sleep(2.5)
-                motor_off()
+               
+            while(front_sensor>5): #gets us into box
+                update_sensors()
+                motor_on(-68,-100)
+                time.sleep(.05)
+            motor_off()
+            time.sleep(0.2)
+            motors_spin(2,-50,-50) #snugs into bux
+            time.sleep(1)
+
+            #detects how many candles are lit
+            numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
+            fire_emoji = "🔥" * numberLit
+            print(f"Candles Lit: {fire_emoji}")
+            time.sleep(1)
+
+            #puts out candles
+            spin(2, -50)
+            time.sleep(2)
+            spin(1.8,50)
+            time.sleep(0.1)
+
+            #checks orientation
+            print(classify_position(left_sensor_down, right_sensor_down))
+            time.sleep(0.4)
 
             # extinguish flames here (placeholder)
             if number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True) > 1:

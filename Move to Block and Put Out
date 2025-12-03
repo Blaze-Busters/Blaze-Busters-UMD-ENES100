@@ -16,7 +16,7 @@ time.sleep(1)
 #puts out candles
 spin(2, -50)
 time.sleep(2)
-spin(2,50)
+spin(1.8,50)
 time.sleep(0.1)
 
 #checks orientation

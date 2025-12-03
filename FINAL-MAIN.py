@@ -298,7 +298,7 @@ while True:
                     update_position()
                     motor_on(50, -50)      # tiny spin left
                     time.sleep(0.05)
-                    motor_off()
+                    motor_off()n
 
                 # move forward a bit
                 motor_on(60, 60)

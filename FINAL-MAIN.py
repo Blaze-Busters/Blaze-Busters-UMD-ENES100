@@ -35,7 +35,9 @@ servo = PWM(Pin(16), freq=50)
 
 # ----------------- START BUTTON -----------------
 button_start = Pin(15, Pin.IN, Pin.PULL_UP)
-
+enes100.begin("BlazeBusters", "FIRE", 67, 1120)
+time.sleep(4)
+enes100.is_connected()
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
     # speed expected in range -100 .. 100

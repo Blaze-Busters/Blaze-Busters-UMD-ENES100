@@ -298,7 +298,7 @@ while True:
                 # face +pi/2 (roughly straight up)
                 while not (1.541 < theta < 1.599):
                     update_position()
-                    motor_on(50, -50)      # tiny spin left
+                    motor_on(-63, 100)      # tiny spin left
                     time.sleep(0.05)
                     motor_off()n
 
@@ -308,7 +308,7 @@ while True:
                 # face -pi/2 (roughly straight down)
                 while not (-1.599 < theta < -1.541):
                     update_position()
-                    motor_on(-50, 50)      # tiny spin right
+                    motor_on(63, -100)      # tiny spin right
                     time.sleep(0.05)
                     motor_off()
 
@@ -343,14 +343,15 @@ while True:
                 spin(10, 100)   # lower
                 spin(10,-100)   # raise
 
-            motors_spin(4, 60, -60)  # backup
 
             # turn to face finish line (rough heuristic)
             update_position()
-            if theta > 1:
-                motors_spin(0.5, 60, 60)   # rotate one way
+            if y > 1:
+               motors_spin(5,50,100) # move back
+               motors_spin(2.4,-50,100) #rotate right
             else:
-                motors_spin(0.5, 60, -60)  # rotate other way
+                motors_spin(5,50,100) # move back
+                motors_spin(2.4,50,-100)  # rotate left
 
             update_position()
 
@@ -361,54 +362,42 @@ while True:
         while Z1_MAX < x < Z2_MAX:
             update_position()
             update_sensors()
-
-            # read your ultrasonic sensors
-            ultrasound_front = front_sensor
-            ultrasound_right = right_sensor_side
-            ultrasound_left = left_sensor_side
+        
 
             # move straight until obstacle within 10 cm
-            while ultrasound_front > 10 and Z1_MAX < x < Z2_MAX:
+            while front_sensor > 37 and Z1_MAX < x < Z2_MAX:
                 update_position()
                 update_sensors()
-                motor_on(60, 60)
+                motor_on(-63, -100)
                 time.sleep(0.05)
-                ultrasound_front = front_sensor
             motor_off()
 
-            if ultrasound_front < 10:
-                if y > 1.5:
+            if front_sensor < 37:
+                if y > 1:
                     # on LEFT side of field → turn RIGHT
-                    motors_spin(0.4, -60, 60)  # right 90°
-                    while front_sensor < 15 and Z1_MAX < x < Z2_MAX:
+                    motors_spin(2.4, -50, 100)  # right 90°
+                    update_sensors()
+                    while left_sensor_side < 10 and Z1_MAX < x < Z2_MAX:
                         update_position()
                         update_sensors()
-                        motor_on(60, 60)
+                        motor_on(-63, -100)
                         time.sleep(0.05)
+                    time.sleep(1)
                     motor_off()
-                    motors_spin(0.4, 60, -60)  # left 90° back to lane
+                    motors_spin(2.6, 50, -100)  # left 90° back to lane
 
-                elif y < 0.5:
+                elif y < 1:
                     # on RIGHT side of field → turn LEFT
-                    motors_spin(0.4, 60, -60)  # left 90°
-                    while front_sensor < 15 and Z1_MAX < x < Z2_MAX:
+                    motors_spin(2.6, 50, -100)  # left 90°
+                    while right_side_sensor < 10 and Z1_MAX < x < Z2_MAX:
                         update_position()
                         update_sensors()
-                        motor_on(60, 60)
+                        otor_on(-63, -100)
                         time.sleep(0.05)
+                    time.sleep(1)
                     motor_off()
-                    motors_spin(0.4, -60, 60)  # right 90° back to lane
+                    motors_spin(2.4, -50, 100)  # right 90° back to lane
 
-                else:
-                    # center → also turn LEFT
-                    motors_spin(0.4, 60, -60)  # turn left
-                    while front_sensor < 15 and Z1_MAX < x < Z2_MAX:
-                        update_position()
-                        update_sensors()
-                        motor_on(60, 60)
-                        time.sleep(0.05)
-                    motor_off()
-                    motors_spin(0.4, -60, 60)  # turn back right
 
         state = ZONE3
 

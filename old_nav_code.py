@@ -1,3 +1,23 @@
+# odometry / position globals
+x = 0.0
+y = 0.0
+theta = 0.0
+
+def update_position():
+    """Single update of x, y, theta (no threading)."""
+    global x, y, theta
+    x = enes100.x()
+    y = enes100.y()
+    theta = enes100.theta()
+
+# ----ZONE BOUNDARIES----
+Z1_MAX = 0.76 #meters
+Z2_MAX = 2.75
+Z3_MAX = 3.7
+
+# ----- state machine definitions -----
+IDLE, ZONE1, ZONE2, ZONE3, DONE = range(5)
+state = IDLE
 
 while True:
     time.sleep_ms(10)  # small loop delay

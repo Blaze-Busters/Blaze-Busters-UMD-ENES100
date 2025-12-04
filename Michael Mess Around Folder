@@ -236,9 +236,15 @@ def classify_position(left_distance, right_distance):
     option_C = (4.3 <= left_distance <= 7) and (3.7 <= right_distance <= 4.9)
     option_D = (7 <= left_distance <= 30) and (2 <= right_distance <= 4)
 
-    if option_A: return "Option A"
-    if option_B: return "Option B"
-    if option_C: return "Option C"
+    if option_A:
+        enes100.mission('TOPOGRAPHY', 'TOP_A')
+        return "Option A"
+    if option_B:
+        enes100.mission('TOPOGRAPHY', 'TOP_B')
+        return "Option B"
+    if option_C:
+        enes100.mission('TOPOGRAPHY', 'TOP_C')
+        return "Option C"
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
 #print(classify_position(left_sensor_down, right_sensor_down))
@@ -456,6 +462,7 @@ numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 enes100.print(f"Candles Lit: {fire_emoji}")
+enes100.mission('NUM_CANDLES', numberLit)
 
 time.sleep(1)
 

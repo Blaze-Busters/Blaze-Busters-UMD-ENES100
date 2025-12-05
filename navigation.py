@@ -1,89 +1,119 @@
-from machine import Pin, time_pulse_us, ADC, PWM
-from time import sleep_us, sleep
-import time
+# ----------------- NAVIGATION RUN -----------------
 
-#ULTRASONIC SENSOR PINS
-TRIG1 = Pin(13, Pin.OUT)
-ECHO1 = Pin(32, Pin.IN)
-TRIG2 = Pin(12, Pin.OUT)
-ECHO2 = Pin(33, Pin.IN)
-TRIG3 = Pin(14, Pin.OUT)
-ECHO3 = Pin(34, Pin.IN)
-TRIG4 = Pin(27, Pin.OUT)
-ECHO4 = Pin(35, Pin.IN)
-TRIG5 = Pin(5, Pin.OUT)
-ECHO5 = Pin(36, Pin.IN)
+#---------ZONE 1-----------
+if y < 1.3: #if placed right side of field
+  while not (1.74 < enes100.theta < 1.77):
+    motor_on(-30,50) #spins until facing box
+    time.sleep(.1)
+    motor_off()
+else: #if placed left side of field
+  while not (-1.77 < enes100.theta < -1.74):
+    motor_on(-30,50) #spins until facing box
+    time.sleep(.1)
+    motor_off()
+time.sleep(1)
 
-#FLAME SENSOR PINS
-FS1 = Pin(17, Pin.IN)
-FS2 = Pin(25, Pin.IN)
-FS3 = Pin(26, Pin.IN)
-FS4 = Pin(39, Pin.IN)
+#gets us into box
+update_sensors()
+while(front_sensor>5): #moves into box
+    update_sensors()
+    motor_on(-68,-100)
+    time.sleep(.05)
+motor_off()
+time.sleep(0.2)
+motors_spin(2,-50,-50) #snugs into box
+time.sleep(1)
 
+#detects how many candles are lit
+update_sensors()
+numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
+fire_emoji = "🔥" * numberLit
+print(f"Candles Lit: {fire_emoji}")
+enes100.print(f"Candles Lit: {fire_emoji}")
+enes100.mission('NUM_CANDLES', numberLit)
 
-#SERVO SETUP
-servo = PWM(Pin(16), freq=50)
-# pot = ADC(Pin(4))
-# pot.atten(ADC.ATTN_11DB)
-# pot.width(ADC.WIDTH_10BIT) 
+time.sleep(0.5)
 
-#MOTOR DRIVER SETUP
-ENA = Pin(22, Pin.OUT)
-IN1 = Pin(18, Pin.OUT)
-IN2 = Pin(19, Pin.OUT)
-ENB = Pin(23, Pin.OUT)
-IN3 = Pin(21, Pin.OUT)
-IN4 = Pin(4, Pin.OUT)
+#checks orientation of box
+update_sensors()
+print(classify_position(left_sensor_down, right_sensor_down))
+enes100.print(classify_position(left_sensor_down, right_sensor_down))
 
-def set_speed(speed):
-    stop_duty = 77 
-    duty_range = 25 
-    duty = int(stop_duty + (speed / 100) * duty_range)
-    servo.duty(duty)
+time.sleep(0.2)
 
-def distance_cm(trig, echo):
-    trig.value(0)
-    sleep_us(2)
-    trig.value(1)
-    sleep_us(10)
-    trig.value(0)
-    duration = time_pulse_us(echo, 1, 30000)
-    dist_cm = (duration / 2) * 0.0343
-    return dist_cm
+#puts out candles
+spin(2, -50)
+time.sleep(2)
+spin(1.8,50)
+time.sleep(0.1)
 
+time.sleep(0.4)
 
-def flame_detected(flame_pin):
-    if flame_pin.value() == 0:
-        return "Fire!"
+#back outs and turns
+motors_spin(5,50,100)
+time.sleep(0.4)
+motors_spin(2.4,-50,100) #check turn values during testing
+
+#-----------ZONE 2-----------
+update_sensors()
+while (enes100.x<3): #while still in obstacle range
+    update_sensors()
+
+    #Gets us in front of an obstacle, stops before it
+    while front_sensor > 37:
+        update_sensors()
+        motor_on(-63, -100)
+        time.sleep(0.1)
+    time.sleep(0.01)
+    motors_off()
+    time.sleep(0.5)
+    update_sensors()
+    
+    #figuring out which way to turn
+    if y<0.8:#if on right side of field
+        motors_spin(2.6,50,-100) #turn left
+        update_sensors()
+        while right_sensor_side < 40: #move until past obstacle
+            update_sensors()
+            motor_on(-68, -100)
+            time.sleep(0.05)
+        motor_off()
+        time.sleep(0.2)
+        motors_spin(1.5,-63,-100) #turn right
+        
     else:
-        return "No Fire"
+        motors_spin(1.5,-63,100) #turn right
+        update_sensors()
+        while left_sensor_side < 40:
+            update_sensors()
+            motor_on(-68,-100)
+            time.sleep(0.05)
+        motor_off()
+        time.sleep(0.2)
+        motors_spin(2.6,50,-100)
 
-# enes100.begin("Blaze Busters","FIRE",222,1120)
+#--------ZONE 3----------
+if enes100.y < 1.7: #get in line to go under the bar
+    motors_spin(2.6,50,-100) #turn left
+    time.sleep(0.2)
+    
+    while enes100.y <1.5:
+        motors_on(-63,-100)
+        
+    time.sleep(0.2)
+    motors_off()
+    time.sleep(0.2)
+    motors_spin(1.5,-63,-100) #turn right
+    time.sleep(0.2)
+    
+    #now OTV in line to go straight through bar
+    while enes.100.x <3.7:
+        motors_on(-63,100) #move below bar
+    time.sleep(2)
+else:
+    while enes.100.x <3.7:
+        motors_on(-63,100) #move below bar
+    time.sleep(2)
 
-# while (enes100.is_visible):
-#     print(enes100.x)
-#     print(enes100.y)
-#     print(enes100.theta)
-#     print("-----------------------------")
-#     time.sleep(2)
-
-
-while True:
-    set_speed(pot.read() * 100 / 1023)
-    print("""
-ULTRASONIC SENSORS
-US1: {} cm, US2: {} cm, US3: {} cm, US4: {} cm, US5: {} cm
-FLAME SENSORS
-FS1: {}, FS2: {}, FS3: {}, FS4: {}
-POTENTIOMETER VALUE: {}
-""".format(distance_cm(TRIG1, ECHO1),
-           distance_cm(TRIG2, ECHO2),
-           distance_cm(TRIG3, ECHO3),
-           distance_cm(TRIG4, ECHO4),
-           distance_cm(TRIG5, ECHO5),
-           flame_detected(FS1),
-           flame_detected(FS2),
-           flame_detected(FS3),
-           flame_detected(FS4))
-    )
-    time.sleep(.5)
+#---------ZONE 4----------
+victory_dance()

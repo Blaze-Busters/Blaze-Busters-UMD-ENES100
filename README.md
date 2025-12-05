@@ -29,7 +29,7 @@ To ensure robustness, the mission setup includes several randomized elements tha
 
 ### **1. Fire Pedestal Placement**
 
-* The **center of the pedestal base** is placed on the ground within **50 mm** of the destination, relative to the vision system’s Oxy reference frame.
+* The **center of the pedestal base** is placed on the ground within **50 mm** of the destination, relative to the vision system’s reference frame.
 * The fire pedestal is secured to the arena mats using **Velcro**.
 
 ### **2. Fire Topography Orientation**

@@ -25,7 +25,7 @@ The primary goal of the mission is to successfully navigate the arena, identify 
 
 ## Fire Suppression Randomization Procedures
 
-To prevent the OTV from being hardcoded, certain radimization procedures were put in place
+To prevent the OTV from being hardcoded, certain randomization procedures were put in place
 
 ### **1. Fire Pedestal Placement**
 

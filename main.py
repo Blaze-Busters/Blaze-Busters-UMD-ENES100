@@ -38,15 +38,16 @@ servo = PWM(Pin(16), freq=50)
 enes100.begin("BlazeBusters", "FIRE", 67, 1120)
 time.sleep(1)
 enes100.is_connected()
+
 # ----------------- SERVO FUNCTION -----------------
 def spin(duration, speed):
     # speed expected in range -100 .. 100
-    speed = max(min(speed, 100), -100)   # clamp
+    speed = max(min(speed, 100), -100)    # clamp
     
     min_us = 1000
     max_us = 2000
     center_us = 1500
-    period_us = 20000   # 50Hz → 20ms period
+    period_us = 20000    # 50Hz → 20ms period
 
     # map speed (-100..100) to pulse (1000..2000)
     pulse = center_us + (speed / 100) * 500
@@ -113,7 +114,7 @@ def _set_pwm(pwm, frac):
 # ----- DC Motor class -----
 class DCMotor:
     def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
-                 brake_stop=False, invert=False, gain=1.0):
+                     brake_stop=False, invert=False, gain=1.0):
         self.in_a = in_a
         self.in_b = in_b
         self.en   = en_pwm
@@ -206,7 +207,7 @@ Directions:
 
 # ----------------- CANDLE CHECK FUNCTION -----------------
 def number_of_flames_lit(left_flame, right_flame, front_flame, back_flame,
-                         *, active_low=True, stable=False, samples=5, delay_ms=2):
+                             *, active_low=True, stable=False, samples=5, delay_ms=2):
 
     sensors = [left_flame, right_flame, front_flame, back_flame]
 
@@ -265,15 +266,15 @@ def victory_dance():
 
 
 #---------ZONE 1-----------
-if y < 1.3: #if placed right side of field
-  while not (1.74 < enes100.theta < 1.77):
-    motor_on(-30,50) #spins until facing box
-    time.sleep(.1)
+if enes100.y < 1.3: #if placed right side of field
+    while not (1.74 < enes100.theta < 1.77):
+        motor_on(-30,50) #spins until facing box
+        time.sleep(.1)
     motor_off()
 else: #if placed left side of field
-  while not (-1.77 < enes100.theta < -1.74):
-    motor_on(-30,50) #spins until facing box
-    time.sleep(.1)
+    while not (-1.77 < enes100.theta < -1.74):
+        motor_on(-30,50) #spins until facing box
+        time.sleep(.1)
     motor_off()
 time.sleep(1)
 
@@ -329,12 +330,12 @@ while (enes100.x<3): #while still in obstacle range
         motor_on(-63, -100)
         time.sleep(0.1)
     time.sleep(0.01)
-    motors_off()
+    motor_off()
     time.sleep(0.5)
     update_sensors()
     
     #figuring out which way to turn
-    if y<0.8:#if on right side of field
+    if enes100.y < 0.8:#if on right side of field
         motors_spin(2.6,50,-100) #turn left
         update_sensors()
         while right_sensor_side < 40: #move until past obstacle
@@ -361,29 +362,23 @@ if enes100.y < 1.7: #get in line to go under the bar
     motors_spin(2.6,50,-100) #turn left
     time.sleep(0.2)
     
-    while enes100.y <1.5:
-        motors_on(-63,-100)
+    while enes100.y < 1.5:
+        motor_on(-63,-100)
         
     time.sleep(0.2)
-    motors_off()
+    motor_off()
     time.sleep(0.2)
     motors_spin(1.5,-63,-100) #turn right
     time.sleep(0.2)
     
     #now OTV in line to go straight through bar
-    while enes.100.x <3.7:
-        motors_on(-63,100) #move below bar
+    while enes100.x < 3.7:
+        motor_on(-63,100) #move below bar
     time.sleep(2)
 else:
-    while enes.100.x <3.7:
-        motors_on(-63,100) #move below bar
+    while enes100.x < 3.7:
+        motor_on(-63,100) #move below bar
     time.sleep(2)
 
 #---------ZONE 4----------
 victory_dance()
-
-
-
-
-
-

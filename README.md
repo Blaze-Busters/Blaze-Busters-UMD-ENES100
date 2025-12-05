@@ -1,4 +1,4 @@
-##UMD ENES 100: Autonomous Fire Suppression Vehicle
+## UMD ENES 100: Autonomous Fire Suppression Vehicle
 
 This project implements the control code and systems for the **Autonomous Off-Terrain Vehicle (OTV)** tasked with completing the **Fire Suppression Mission** as part of the UMD ENES 100 course requirements.
 

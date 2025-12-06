@@ -263,8 +263,9 @@ def victory_dance():
     motors_spin(0.3, 50, -100)
     time.sleep(0.1)
 # ----------------- NAVIGATION RUN -----------------
-
-
+enes100.x
+enes100.y
+enes100.theta
 #---------ZONE 1-----------
 if enes100.y < 1.3: #if placed right side of field
     while not (1.74 < enes100.theta < 1.77):
@@ -382,3 +383,4 @@ else:
 
 #---------ZONE 4----------
 victory_dance()
+

@@ -230,10 +230,12 @@ print(f"Candles Lit: {fire_emoji}")
 
 # ----------------- ORIENTATION (CLEAN VERSION, NO DUPLICATES) -----------------
 def classify_position(left_distance, right_distance):
-    option_A = (3.5 <= left_distance <= 5.5) and (8 <= right_distance <= 12)
-    option_B = (2.7 <= left_distance <= 5.2) and (4 <= right_distance <= 6.3)
-    option_C = (4.3 <= left_distance <= 7) and (3.7 <= right_distance <= 4.9)
-    option_D = (7 <= left_distance <= 30) and (2 <= right_distance <= 4)
+ #B, D
+    option_A = (4 <= left_distance <= 5.5) and (5.2 <= right_distance <= 7.4)
+    option_B = (1.7 <= left_distance <= 3.5) and (2.9 <= right_distance <= 4)
+
+    option_C = (3.5 <= left_distance <= 4.3) and (3.4 <= right_distance <= 4.1)
+    option_D = (5.1 <= left_distance <= 6.4) and (1.8 <= right_distance <= 3.4)
 
     if option_A:
         enes100.mission('TOPOGRAPHY', 'TOP_A')
@@ -246,6 +248,7 @@ def classify_position(left_distance, right_distance):
         return "Option C"
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
+
 
 #-------FINAL TASK CODE-----
 
@@ -388,6 +391,7 @@ else:
     time.sleep(2)
 
 '''
+
 
 
 

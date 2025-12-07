@@ -89,8 +89,8 @@ def update_sensors():
     front_sensor = distance_cm(TRIG1, ECHO1)
     left_sensor_side = distance_cm(TRIG2, ECHO2)
     right_sensor_side = distance_cm(TRIG3, ECHO3)
-    left_sensor_down = distance_cm(TRIG4, ECHO4)
-    right_sensor_down = distance_cm(TRIG5, ECHO5)
+    right_sensor_down = distance_cm(TRIG4, ECHO4)
+    left_sensor_down = distance_cm(TRIG5, ECHO5)
 
 # ----------------- MOTOR HELPERS -----------------
 # Set PWM frequency
@@ -249,25 +249,25 @@ def classify_position(left_distance, right_distance):
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
 
-
 #-------FINAL TASK CODE-----
 
 
+'''
 enes100.x
 enes100.y
 enes100.theta
 
 
-if enes100.y < 1.3:  # if placed right side of field
-    while not (1.4 < enes100.theta < 1.6) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
+if enes100.y < 1:  # if placed right side of field
+    while not (1.1 < enes100.theta < 1.4) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
         enes100.theta
-        motor_on(-50, 70)  # spins until facing box
+        motor_on(-80, 80)  # spins until facing box
         time.sleep(.1)
     motor_off()
 else:  # if placed left side of field
-    while not (-1.4 < enes100.theta < -1.6) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
+    while not (-1.1 < enes100.theta < -1.4) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
         enes100.theta
-        motor_on(-30, 50)  # spins until facing box
+        motor_on(80, -80)  # spins until facing box
         time.sleep(.1)
     motor_off()
 time.sleep(1)
@@ -279,12 +279,19 @@ enes100.y
 enes100.theta
 while (front_sensor > 5):  # moves into box
     update_sensors()
-    motor_on(68, 100)
+    motor_on(71, 100)
     time.sleep(.05)
 motor_off()
 time.sleep(0.2)
-motors_spin(2, 34, 50)  # snugs into box
+motors_spin(2, 78, 100)  # snugs into box
 time.sleep(1)
+
+
+
+motors_spin(4,-80,80)
+time.sleep(1)
+motors_spin(4,78,100)
+'''
 
 # detects how many candles are lit
 update_sensors()
@@ -292,22 +299,28 @@ numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 enes100.print(f"Candles Lit: {fire_emoji}")
-enes100.mission('NUM_CANDLES', numberLit)
+#enes100.mission('NUM_CANDLES', numberLit)
 
 time.sleep(0.5)
 
 # checks orientation of box
-update_sensors()
-print(classify_position(left_sensor_down, right_sensor_down))
-enes100.print(classify_position(left_sensor_down, right_sensor_down))
+
+hold=0
+while hold!=3:
+    update_sensors()
+    print(classify_position(left_sensor_down, right_sensor_down))
+    enes100.print(classify_position(left_sensor_down, right_sensor_down))
+    time.sleep(1)
+    hold+=1
 
 time.sleep(0.2)
 
 # puts out candles
 spin(2, -50)
 time.sleep(2)
-spin(1.8, 50)
+spin(2, 50)
 time.sleep(0.1)
+
 
 '''
 time.sleep(0.4)
@@ -391,7 +404,6 @@ else:
     time.sleep(2)
 
 '''
-
 
 
 

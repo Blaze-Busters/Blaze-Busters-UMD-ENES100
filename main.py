@@ -93,20 +93,6 @@ def update_sensors():
     right_sensor_down = distance_cm(TRIG5, ECHO5)
 
 # ----------------- MOTOR HELPERS -----------------
-from machine import Pin, PWM
-import time
-
-# ----- Pin map -----
-# Left motor
-IN1 = Pin(18, Pin.OUT)
-IN2 = Pin(19, Pin.OUT)
-ENA = PWM(Pin(22))
-
-# Right motor
-IN3 = Pin(21, Pin.OUT)
-IN4 = Pin(4,  Pin.OUT)
-ENB = PWM(Pin(23))
-
 # Set PWM frequency
 for en in (ENA, ENB):
     en.freq(1000)
@@ -117,7 +103,8 @@ for p in (IN1, IN2, IN3, IN4):
 
 # ----- PWM helper -----
 def _set_pwm(pwm, frac):
-    frac = max(0.0, min(1.0, frac))
+    if frac < 0:  frac = 0.0
+    if frac > 1:  frac = 1.0
     try:
         pwm.duty_u16(int(frac * 65535))
     except AttributeError:
@@ -125,39 +112,90 @@ def _set_pwm(pwm, frac):
 
 # ----- DC Motor class -----
 class DCMotor:
-    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM):
+    def __init__(self, in_a: Pin, in_b: Pin, en_pwm: PWM,
+                 brake_stop=False, invert=False, gain=1.0):
         self.in_a = in_a
         self.in_b = in_b
         self.en   = en_pwm
+        self.brake = brake_stop
+        self.inv   = invert
+        self.gain  = gain
         self.stop()
 
-    def forward(self, speed):
-        self.in_a.value(1)
-        self.in_b.value(0)
-        _set_pwm(self.en, speed / 100.0)
+    def _dir(self, forward=True):
+        fwd = forward ^ self.inv
+        if fwd:
+            self.in_a.value(1); self.in_b.value(0)
+        else:
+            self.in_a.value(0); self.in_b.value(1)
+
+    def prepare_start(self, speed):
+        if speed is None:
+            speed = 0
+
+        speed *= self.gain
+        speed = max(min(speed, 100), -100)
+
+        if speed == 0:
+            return 0
+
+        self._dir(forward=(speed > 0))
+        return speed
+
+    def apply_pwm(self, speed):
+        if speed == 0:
+            self.stop()
+            return
+        _set_pwm(self.en, abs(speed) / 100.0)
 
     def stop(self):
-        self.in_a.value(0)
-        self.in_b.value(0)
+        if self.brake:
+            self.in_a.value(1); self.in_b.value(1)
+        else:
+            self.in_a.value(0); self.in_b.value(0)
         _set_pwm(self.en, 0.0)
 
-# ----- Create motors -----
-motor_left  = DCMotor(IN1, IN2, ENA)
-motor_right = DCMotor(IN3, IN4, ENB)
 
-# ----- Drive forward -----
+# ----- CREATE MOTORS -----
+motor_left  = DCMotor(IN1, IN2, ENA, brake_stop=False, gain=1)
+motor_right = DCMotor(IN3, IN4, ENB, brake_stop=False, gain=1)
+
+# ----- motors_spin WITHOUT KICK -----
+def motors_spin(duration, speed_left, speed_right):
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    if sL == 0 and sR == 0:
+        time.sleep(duration)
+        return
+
+    # Apply steady PWM immediately
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
+    time.sleep(duration)
+
+    motor_left.stop()
+    motor_right.stop()
+
+
+# ----- Continuous motor control (ON/OFF) WITHOUT KICK -----
+def motor_on(speed_left, speed_right):
+    sL = motor_left.prepare_start(speed_left)
+    sR = motor_right.prepare_start(speed_right)
+
+    if sL == 0 and sR == 0:
+        return
+
+    motor_left.apply_pwm(sL)
+    motor_right.apply_pwm(sR)
+
+
+def motor_off():
+    motor_left.stop()
+    motor_right.stop()
+    
 '''
-speed_left = 68
-speed_right = 100
-
-motor_left.forward(speed_left)
-motor_right.forward(speed_right)
-
-time.sleep(5)
-
-motor_left.stop()
-motor_right.stop()
-
 Directions:
  motors_spin(-,-) # straight
  motors_spin(+,+) # back
@@ -208,28 +246,15 @@ def classify_position(left_distance, right_distance):
         return "Option C"
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
-#print(classify_position(left_sensor_down, right_sensor_down))
 
-# ----------------- VICTORY DANCE -----------------
-def victory_dance():
-    motors_spin(0.5, 100, 100)
-    time.sleep(0.01)
-    motors_spin(0.3, -50, 100)
-    time.sleep(0.01)
-    motors_spin(0.3, -100, -100)
-    time.sleep(0.01)
-    motors_spin(0.3, -50, 100)
-    time.sleep(0.01)
-    motors_spin(0.3, 50, -100)
-    time.sleep(0.1)
-# ----------------- NAVIGATION RUN -----------------
+#-------FINAL TASK CODE-----
+
+'''
 enes100.x
 enes100.y
 enes100.theta
 
-#CHANGE MOTORS SPINNING
-'''
-#---------ZONE 1-----------
+
 if enes100.y < 1.3:  # if placed right side of field
     while not (1.74 < enes100.theta < 1.77) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
         enes100.theta
@@ -361,7 +386,5 @@ else:
         motor_on(-63, 100)  # move below bar
     time.sleep(2)
 
-#---------ZONE 4----------
-#victory_dance()
 
 

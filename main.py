@@ -147,13 +147,13 @@ motor_right = DCMotor(IN3, IN4, ENB)
 
 # ----- Drive forward -----
 '''
-speed = 50    # 0-100 %
-duration = 200  # seconds
+speed_left = 68
+speed_right = 100
 
-motor_left.forward(speed)
-motor_right.forward(speed)
+motor_left.forward(speed_left)
+motor_right.forward(speed_right)
 
-time.sleep(duration)
+time.sleep(5)
 
 motor_left.stop()
 motor_right.stop()
@@ -257,7 +257,7 @@ motor_off()
 time.sleep(0.2)
 motors_spin(2, -50, -50)  # snugs into box
 time.sleep(1)
-
+'''
 # detects how many candles are lit
 update_sensors()
 numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
@@ -287,6 +287,7 @@ time.sleep(0.4)
 motors_spin(5, 50, 100)
 time.sleep(0.4)
 motors_spin(2.4, -50, 100)  # check turn values during testing
+
 
 #-----------ZONE 2-----------
 update_sensors()
@@ -362,5 +363,5 @@ else:
 
 #---------ZONE 4----------
 #victory_dance()
-'''
+
 

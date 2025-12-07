@@ -95,7 +95,7 @@ def update_sensors():
 # ----------------- MOTOR HELPERS -----------------
 # Set PWM frequency
 for en in (ENA, ENB):
-    en.freq(1000)
+    en.freq(5000)
 
 # Make everything safe
 for p in (IN1, IN2, IN3, IN4):
@@ -385,6 +385,7 @@ else:
         enes100.x
         motor_on(63, 100)  # move below bar
     time.sleep(2)
+
 
 
 

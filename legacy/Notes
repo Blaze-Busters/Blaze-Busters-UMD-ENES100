@@ -17,7 +17,8 @@ B:            RIGHT: 4.853            LEFT: 3.327
 C:            RIGHT: 4.218            LEFT: 6.568
 D:            RIGHT: 14.9205            LEFT: 3.9102
 
-motors_spin(4,86,100) #forward
+
+motors_spin(5,88,100) #forward
 time.sleep(0.5)
 motors_spin(2.4,-74,100) #90 degrees left
 time.sleep(0.5)

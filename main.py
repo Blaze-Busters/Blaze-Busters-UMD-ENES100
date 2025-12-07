@@ -250,10 +250,10 @@ def classify_position(left_distance, right_distance):
 #-------FINAL TASK CODE-----
 
 '''
+
 enes100.x
 enes100.y
 enes100.theta
-
 
 if enes100.y < 1.3:  # if placed right side of field
     while not (1.74 < enes100.theta < 1.77) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
@@ -282,7 +282,7 @@ motor_off()
 time.sleep(0.2)
 motors_spin(2, -50, -50)  # snugs into box
 time.sleep(1)
-'''
+
 # detects how many candles are lit
 update_sensors()
 numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
@@ -305,6 +305,7 @@ spin(2, -50)
 time.sleep(2)
 spin(1.8, 50)
 time.sleep(0.1)
+
 
 time.sleep(0.4)
 
@@ -386,5 +387,7 @@ else:
         motor_on(-63, 100)  # move below bar
     time.sleep(2)
 
+'''
+motors_spin(5,60,60)
 
 

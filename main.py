@@ -332,6 +332,7 @@ motors_spin(2.4, -50, 100)  # check turn values during testing
 
 
 #-----------ZONE 2-----------
+
 update_sensors()
 enes100.x
 enes100.y
@@ -340,11 +341,12 @@ while (enes100.x < 3):  # while still in obstacle range
     update_sensors()
     enes100.x
     # Gets us in front of an obstacle, stops before it
-    while front_sensor > 37:
-        update_sensors()
-        motor_on(63, 100)
+    front_sensor=50
+    while front_sensor > 35:
+        motor_on(87, 100)
         time.sleep(0.1)
-    time.sleep(0.01)
+        update_sensors()
+    time.sleep(0.5)
     motor_off()
     time.sleep(0.5)
     update_sensors()
@@ -352,58 +354,43 @@ while (enes100.x < 3):  # while still in obstacle range
     # figuring out which way to turn
     if enes100.y < 0.8:  # if on right side of field
         enes100.y
-        motors_spin(2.6, -50, 100)  # turn left
+        motors_spin(1.85,-88,100)  # turn left
         update_sensors()
+        right_sensor_side=30
         while right_sensor_side < 40:  # move until past obstacle
-            update_sensors()
-            motor_on(68, 100)
+            motor_on(87, 100)
             time.sleep(0.05)
+            update_sensors()
         motor_off()
         time.sleep(0.2)
-        motors_spin(1.5, 63, -100)  # turn right
+        motors_spin(1.5,87,100)
+        time.sleep(1)
+        motors_spin(1.85,88,-100)  # turn right
+        time.sleep(0.5)
 
     else:
-        motors_spin(1.5, 63, -100)  # turn right
+        motors_spin(1.85,88,-100)  # turn right
         update_sensors()
+        left_sensor_side=30
         while left_sensor_side < 40:
-            update_sensors()
-            motor_on(68, 100)
+            motor_on(87, 100)
             time.sleep(0.05)
+            update_sensors()
         motor_off()
         time.sleep(0.2)
-        motors_spin(2.6, -50, 100)
+        motors_spin(1.5,87,100)
+        time.sleep(1)
+        motors_spin(1.85, -88, 100) # turn leftt
+        time.sleep(0.5)
 
-#--------ZONE 3----------
 enes100.x
-enes100.y
-enes100.theta
-if enes100.y < 1.7:  # get in line to go under the bar
-    enes100.y
-    motors_spin(2.6, -50, 100)  # turn left
-    time.sleep(0.2)
-
-    while enes100.y < 1.5:
-        enes100.y
-        motor_on(63, 100)
-
-    time.sleep(0.2)
-    motor_off()
-    time.sleep(0.2)
-    motors_spin(1.5, 63, -100)  # turn right
-    time.sleep(0.2)
-
-    # now OTV in line to go straight through bar
-    while enes100.x < 3.7:
-        enes100.x
-        motor_on(63, 100)  # move below bar
-    time.sleep(2)
-else:
-    while enes100.x < 3.7:
-        enes100.x
-        motor_on(63, 100)  # move below bar
-    time.sleep(2)
-
+while enes100.x<3.7:
+    motor_on(87,100)
+    time.sleep(0.3)
+time.sleep(0.1)
+motor_off()
 '''
+
 
 
 

@@ -251,47 +251,37 @@ def classify_position(left_distance, right_distance):
 
 #-------FINAL TASK CODE-----
 
-
-'''
 enes100.x
 enes100.y
 enes100.theta
 
-
-if enes100.y < 1:  # if placed right side of field
-    while not (1.1 < enes100.theta < 1.4) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
+while enes100.y == -1.00:
+    time.sleep(0.1)
+if enes100.y<=1:
+    enes100.print(enes100.y)
+    while not (1.15 < enes100.theta < 1.55):
         enes100.theta
-        motor_on(-80, 80)  # spins until facing box
-        time.sleep(.1)
-    motor_off()
-else:  # if placed left side of field
-    while not (-1.1 < enes100.theta < -1.4) and -1 < enes100.x < 5 and -1 < enes100.y < 5:
+        motor_on(-75, 70)  # spins until facing box
+        time.sleep(.001)
+    time.sleep(0.4)
+if(enes100.y>1):
+    enes100.print(enes100.y)
+    while not (-2 < enes100.theta < -1.8):
         enes100.theta
-        motor_on(80, -80)  # spins until facing box
-        time.sleep(.1)
-    motor_off()
-time.sleep(1)
+        motor_on(-75, 70)  # spins until facing box
+        time.sleep(.001)
+    time.sleep(0.4)
 
 # gets us into box
 update_sensors()
-enes100.x
-enes100.y
-enes100.theta
 while (front_sensor > 5):  # moves into box
     update_sensors()
-    motor_on(71, 100)
+    motor_on(88, 100)
     time.sleep(.05)
 motor_off()
 time.sleep(0.2)
 motors_spin(2, 78, 100)  # snugs into box
 time.sleep(1)
-
-
-
-motors_spin(4,-80,80)
-time.sleep(1)
-motors_spin(4,78,100)
-'''
 
 # detects how many candles are lit
 update_sensors()
@@ -304,7 +294,6 @@ enes100.print(f"Candles Lit: {fire_emoji}")
 time.sleep(0.5)
 
 # checks orientation of box
-
 hold=0
 while hold!=3:
     update_sensors()
@@ -312,27 +301,22 @@ while hold!=3:
     enes100.print(classify_position(left_sensor_down, right_sensor_down))
     time.sleep(1)
     hold+=1
-
 time.sleep(0.2)
 
 # puts out candles
 spin(2, -50)
 time.sleep(2)
 spin(2, 50)
-time.sleep(0.1)
 
-
-'''
 time.sleep(0.4)
 
 # back outs and turns
-motors_spin(5, -68, -100)
+motors_spin(5, -88, -100)
 time.sleep(0.4)
-motors_spin(2.4, -50, 100)  # check turn values during testing
 
+#CHECK WHICH DIRECTION IT SPINS: (2.4, -50, 100)  # check turn values during testing
 
 #-----------ZONE 2-----------
-
 update_sensors()
 enes100.x
 enes100.y
@@ -389,7 +373,8 @@ while enes100.x<3.7:
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
-'''
+
+
 
 
 

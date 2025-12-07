@@ -24,4 +24,4 @@ time.sleep(0.5)
 motors_spin(1.8,-88,100) #90 degrees left
 time.sleep(0.5)
 
-motors_spin(2.3,74,-100) #90 degrees right
+motors_spin(1.8,88,-100) #90 degrees right

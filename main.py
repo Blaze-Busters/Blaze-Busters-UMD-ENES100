@@ -314,7 +314,10 @@ time.sleep(0.4)
 motors_spin(5, -88, -100)
 time.sleep(0.4)
 
-#CHECK WHICH DIRECTION IT SPINS: (2.4, -50, 100)  # check turn values during testing
+if(0<enes100.theta<2):
+    motors_spin(1.85,88,-100)
+else:
+    motors_spin(1.85,-88,100)
 
 #-----------ZONE 2-----------
 update_sensors()
@@ -373,6 +376,7 @@ while enes100.x<3.85:
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
+
 
 
 

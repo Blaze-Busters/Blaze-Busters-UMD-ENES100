@@ -347,7 +347,7 @@ while (enes100.x < 3):  # while still in obstacle range
             update_sensors()
         motor_off()
         time.sleep(0.2)
-        motors_spin(1.5,87,100)
+        motors_spin(0.7,87,100)
         time.sleep(1)
         motors_spin(1.85,88,-100)  # turn right
         time.sleep(0.5)
@@ -362,7 +362,7 @@ while (enes100.x < 3):  # while still in obstacle range
             update_sensors()
         motor_off()
         time.sleep(0.2)
-        motors_spin(1.5,87,100)
+        motors_spin(0.7,87,100)
         time.sleep(1)
         motors_spin(1.85, -88, 100) # turn leftt
         time.sleep(0.5)
@@ -373,6 +373,7 @@ while enes100.x<3.85:
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
+
 
 
 

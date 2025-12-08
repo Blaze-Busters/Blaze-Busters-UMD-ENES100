@@ -36,7 +36,7 @@ servo = PWM(Pin(16), freq=50)
 
 # ----------------- START BUTTON -----------------
 enes100.begin("BlazeBusters", "FIRE", 67, 1120)
-time.sleep(1)
+time.sleep(0.5)
 enes100.is_connected()
 
 # ----------------- SERVO FUNCTION -----------------
@@ -231,11 +231,11 @@ print(f"Candles Lit: {fire_emoji}")
 # ----------------- ORIENTATION (CLEAN VERSION, NO DUPLICATES) -----------------
 def classify_position(left_distance, right_distance):
  #B, D
-    option_A = (4 <= left_distance <= 5.5) and (5.2 <= right_distance <= 7.4)
-    option_B = (1.7 <= left_distance <= 3.5) and (2.9 <= right_distance <= 4)
+    option_A = (3.5 <= left_distance <= 5.5) and (5.2 <= right_distance <= 7.4)
+    option_B = (2.4 <= left_distance <= 3.5) and (3 <= right_distance <= 4.6)
 
-    option_C = (3.5 <= left_distance <= 4.3) and (3.4 <= right_distance <= 4.1)
-    option_D = (5.1 <= left_distance <= 6.4) and (1.8 <= right_distance <= 3.4)
+    option_C = (3.6 <= left_distance <= 5.4) and (3.1 <= right_distance <= 3.5)
+    option_D = (9 <= left_distance <= 13.3) and (1.7 <= right_distance <= 3.1)
 
     if option_A:
         enes100.mission('TOPOGRAPHY', 'TOP_A')
@@ -259,9 +259,9 @@ while enes100.y == -1.00:
     time.sleep(0.1)
 if enes100.y<=1:
     enes100.print(enes100.y)
-    while not (1.15 < enes100.theta < 1.55):
+    while not (1.13 < enes100.theta < 1.55):
         enes100.theta
-        motor_on(-75, 70)  # spins until facing box
+        motor_on(-80, 70)  # spins until facing box
         time.sleep(.001)
     time.sleep(0.4)
 if(enes100.y>1):
@@ -272,15 +272,10 @@ if(enes100.y>1):
         time.sleep(.001)
     time.sleep(0.4)
 
-# gets us into box
-update_sensors()
-while (front_sensor > 5):  # moves into box
-    update_sensors()
-    motor_on(88, 100)
-    time.sleep(.05)
+motors_spin(9.5,89,100)
 motor_off()
 time.sleep(0.2)
-motors_spin(2, 78, 100)  # snugs into box
+motors_spin(2, 87, 100)  # snugs into box
 time.sleep(1)
 
 # detects how many candles are lit
@@ -293,38 +288,36 @@ enes100.print(f"Candles Lit: {fire_emoji}")
 
 time.sleep(0.5)
 
-# checks orientation of box
-hold=0
-while hold!=3:
-    update_sensors()
-    print(classify_position(left_sensor_down, right_sensor_down))
-    enes100.print(classify_position(left_sensor_down, right_sensor_down))
-    time.sleep(1)
-    hold+=1
+update_sensors()
+print(classify_position(left_sensor_down, right_sensor_down))
+enes100.print(classify_position(left_sensor_down, right_sensor_down))
+time.sleep(1)
+print(classify_position(left_sensor_down, right_sensor_down))
+enes100.print(classify_position(left_sensor_down, right_sensor_down))
 time.sleep(0.2)
 
 # puts out candles
-spin(2, -50)
-time.sleep(2)
-spin(2, 50)
-
-time.sleep(0.4)
+spin(3, -50)
+time.sleep(5)
+spin(3, 50)
 
 # back outs and turns
-motors_spin(7, -88, -100)
+motors_spin(9, -88, -100)
 time.sleep(0.4)
 
 if(0<enes100.theta<2):
-    motors_spin(1.85,88,-100)
+    motors_spin(1.75,88,-100)
 else:
-    motors_spin(1.85,-88,100)
+    motors_spin(1.75,-88,100)
 
 #-----------ZONE 2-----------
 update_sensors()
 enes100.x
 enes100.y
 enes100.theta
-while (enes100.x < 3):  # while still in obstacle range
+while enes100.x == -1.00:
+    time.sleep(0.1)
+while (enes100.x < 3.2):  # while still in obstacle range
     update_sensors()
     enes100.x
     # Gets us in front of an obstacle, stops before it
@@ -339,9 +332,9 @@ while (enes100.x < 3):  # while still in obstacle range
     update_sensors()
 
     # figuring out which way to turn
-    if enes100.y < 0.8:  # if on right side of field
+    if enes100.y < 0.4:  # if on right side of field
         enes100.y
-        motors_spin(1.85,-88,100)  # turn left
+        motors_spin(1.75,-88,100)  # turn left
         update_sensors()
         right_sensor_side=30
         while right_sensor_side < 40:  # move until past obstacle
@@ -352,11 +345,11 @@ while (enes100.x < 3):  # while still in obstacle range
         time.sleep(0.2)
         motors_spin(0.7,87,100)
         time.sleep(1)
-        motors_spin(1.85,88,-100)  # turn right
+        motors_spin(1.75,88,-100)  # turn right
         time.sleep(0.5)
 
     else:
-        motors_spin(1.85,88,-100)  # turn right
+        motors_spin(1.75,88,-100)  # turn right
         update_sensors()
         left_sensor_side=30
         while left_sensor_side < 40:
@@ -367,23 +360,26 @@ while (enes100.x < 3):  # while still in obstacle range
         time.sleep(0.2)
         motors_spin(0.7,87,100)
         time.sleep(1)
-        motors_spin(1.85, -88, 100) # turn leftt
+        motors_spin(1.75, -88, 100) # turn leftt
         time.sleep(0.5)
 
-enes100.x
-while enes100.x<3.85:
-    motor_on(87,100)
-    time.sleep(0.3)
-time.sleep(0.1)
 motor_off()
-
-
-
-
-
-
-
-
+time.sleep(0.4)
+if enes100.y<1:
+    motors_spin(1.75, -88, 100)
+    time.sleep(0.3)
+    while(enes100.x<3.2):
+        motor_on(87, 100)
+        time.sleep(0.1)
+    time.sleep(0.1)
+    motor_off()
+    motors_spin(1.75,88,-100)
+    motors_spin(10,88,100)
+else:
+    while(enes100.x<3.88):
+        motor_on(88,100)
+        time.sleep(0.1)
+    motor_off()
 
 
 

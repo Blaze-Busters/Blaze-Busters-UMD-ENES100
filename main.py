@@ -4,6 +4,7 @@ from time import sleep_us, sleep
 from enes100 import enes100
 import time
 from math import pi
+import random
 
 # ----------------- ULTRASONIC SENSOR PINS -----------------
 TRIG1 = Pin(13, Pin.OUT)
@@ -35,7 +36,7 @@ IN4 = Pin(4, Pin.OUT)
 servo = PWM(Pin(16), freq=50)
 
 # ----------------- START BUTTON -----------------
-enes100.begin("BlazeBusters", "FIRE", 67, 1120)
+enes100.begin("Blaze Busters", "FIRE", 67, 1120)
 time.sleep(1)
 enes100.is_connected()
 
@@ -249,11 +250,25 @@ def classify_position(left_distance, right_distance):
     if option_D: return "Option D"
     return "Unknown — values do not match any option."
 
-#-------FINAL TASK CODE-----
 
-enes100.x
-enes100.y
-enes100.theta
+def victory_dance(use_leds:int=False, led_pins:list[int]=None):
+    if use_leds and led_pins is not None:
+        pins_out = [Pin(p, Pin.OUT) for p in led_pins]
+        for pin in pins_out:
+            pin.value(1)
+    names = ["Varun", "Michael", "Saaya", "Armitta", "Donzel", "Patrick", "Sofija", "Lukas"]
+    choice = random.choice(names)
+    enes100.print(f"shout out to {"everyone but" if choice == "Saaya" else ""} {choice}!")
+    spin(5, -80)
+    for i in range(5):
+        motor_on(100, -100)
+
+        time.sleep(1.5)
+        motor_on(-100, 100)
+
+        time.sleep(1.5)
+    spin(5, 80)
+#-------FINAL TASK CODE-----
 
 while enes100.y == -1.00:
     time.sleep(0.1)
@@ -289,7 +304,7 @@ numberLit = number_of_flames_lit(FS1, FS2, FS3, FS4, stable=True)
 fire_emoji = "🔥" * numberLit
 print(f"Candles Lit: {fire_emoji}")
 enes100.print(f"Candles Lit: {fire_emoji}")
-#enes100.mission('NUM_CANDLES', numberLit)
+enes100.mission('NUM_CANDLES', numberLit)
 
 time.sleep(0.5)
 
@@ -373,7 +388,7 @@ while enes100.x<3.7:
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
-
+victory_dance()
 
 
 

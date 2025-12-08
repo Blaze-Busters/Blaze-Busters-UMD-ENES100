@@ -272,7 +272,7 @@ if(enes100.y>1):
         time.sleep(.001)
     time.sleep(0.4)
 
-motors_spin(9.5,89,100)
+motors_spin(8.5,89,100)
 motor_off()
 time.sleep(0.2)
 motors_spin(2, 87, 100)  # snugs into box
@@ -380,6 +380,7 @@ else:
         motor_on(88,100)
         time.sleep(0.1)
     motor_off()
+
 
 
 

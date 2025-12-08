@@ -311,7 +311,7 @@ spin(2, 50)
 time.sleep(0.4)
 
 # back outs and turns
-motors_spin(5, -88, -100)
+motors_spin(7, -88, -100)
 time.sleep(0.4)
 
 if(0<enes100.theta<2):
@@ -376,6 +376,7 @@ while enes100.x<3.85:
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
+
 
 
 

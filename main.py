@@ -257,7 +257,8 @@ def victory_dance(use_leds:int=False, led_pins:list[int]=None):
         for pin in pins_out:
             pin.value(1)
     names = ["Varun", "Michael", "Saaya", "Armitta", "Donzel", "Patrick", "Sofija", "Lukas"]
-    choice = random.choice(names)
+    weights = [1, 1, .1, 1, 1, 1, 1, 1]
+    choice = random.choices(names, weights=weights, k=1)[0]
     enes100.print(f"shout out to {"everyone but" if choice == "Saaya" else ""} {choice}!")
     spin(5, -80)
     for i in range(5):
@@ -268,6 +269,8 @@ def victory_dance(use_leds:int=False, led_pins:list[int]=None):
 
         time.sleep(1.5)
     spin(5, 80)
+    enes100.print("blaze buster 3.0 signing out!\nalso all my homies hate thonny")
+
 #-------FINAL TASK CODE-----
 
 while enes100.y == -1.00:

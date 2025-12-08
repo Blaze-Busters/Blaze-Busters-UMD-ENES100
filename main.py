@@ -368,11 +368,12 @@ while (enes100.x < 3):  # while still in obstacle range
         time.sleep(0.5)
 
 enes100.x
-while enes100.x<3.7:
+while enes100.x<3.85:
     motor_on(87,100)
     time.sleep(0.3)
 time.sleep(0.1)
 motor_off()
+
 
 
 

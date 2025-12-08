@@ -269,7 +269,7 @@ def victory_dance(use_leds:int=False, led_pins:list[int]=None):
 
         time.sleep(1.5)
     spin(5, 80)
-    enes100.print("blaze buster 3.0 signing out!\nalso all my homies hate thonny")
+    enes100.print("blaze buster 3.0 signing out!\nalso all my homies hate thonny\nRIP buck convertor, 10+ esp32s, 2 motors, 3 ultrasound sensors, and a battery")
 
 #-------FINAL TASK CODE-----
 

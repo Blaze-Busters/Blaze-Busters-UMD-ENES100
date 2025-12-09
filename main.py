@@ -264,6 +264,11 @@ if enes100.y<=1:
         motor_on(-80, 70)  # spins until facing box
         time.sleep(.001)
     time.sleep(0.4)
+if(enes100.theta<1.57):
+    motors_spin(0.2,-89,100)
+elif(enes100.theta>1.57):
+    motors_spin(0.2,89,-100)
+    
 if(enes100.y>1):
     enes100.print(enes100.y)
     while not (-2 < enes100.theta < -1.8):
@@ -271,6 +276,12 @@ if(enes100.y>1):
         motor_on(-75, 70)  # spins until facing box
         time.sleep(.001)
     time.sleep(0.4)
+if(enes100.theta<-1.57):
+    motors_spin(0.2,-89,100)
+elif(enes100.theta>-1.57):
+    motors_spin(0.2,89,-100)
+
+time.sleep(0.3)
 
 motors_spin(8.5,89,100)
 motor_off()
@@ -302,9 +313,38 @@ time.sleep(5)
 spin(3, 50)
 
 # back outs and turns
-motors_spin(9, -88, -100)
+motors_spin(4.5, -88, -100)
 time.sleep(0.4)
 
+
+#make sure its looking straight and not at an angle
+if enes100.y<=1:
+    enes100.print(enes100.y)
+    while not (1.13 < enes100.theta < 1.55):
+        enes100.theta
+        motor_on(-80, 70)  # spins until facing box
+        time.sleep(.001)
+    time.sleep(0.4)
+if(enes100.theta<1.57):
+    motors_spin(0.3,-89,100)
+elif(enes100.theta>1.57):
+    motors_spin(0.3,89,-100)
+    
+if(enes100.y>1):
+    enes100.print(enes100.y)
+    while not (-2 < enes100.theta < -1.8):
+        enes100.theta
+        motor_on(-75, 70)  # spins until facing box
+        time.sleep(.001)
+    time.sleep(0.4)
+if(enes100.theta<-1.57):
+    motors_spin(0.3,-89,100)
+elif(enes100.theta>-1.57):
+    motors_spin(0.3,89,-100)
+
+time.sleep(0.3)
+
+#turn based on where it is on field
 if(0<enes100.theta<2):
     motors_spin(1.75,88,-100)
 else:
